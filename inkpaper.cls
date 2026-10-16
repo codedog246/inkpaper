@@ -11,11 +11,11 @@
 \LoadClass[10pt]{article}
 
 % ---------------------------------------------------------------- layout
-\RequirePackage[letterpaper,top=1.05in,bottom=1.0in,left=1.2in,right=1.2in,
+\RequirePackage[letterpaper,top=1.05in,bottom=1.0in,left=1.05in,right=1.05in,
   headheight=26pt,headsep=0.25in,footskip=0.45in]{geometry}
 \linespread{1.03}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.55em plus 0.1em}
+\setlength{\parindent}{1.1em}
+\setlength{\parskip}{0.12em plus 0.04em}
 
 % ---------------------------------------------------------------- fonts
 \RequirePackage[T1]{fontenc}
@@ -84,10 +84,10 @@
   {\color{ipAccent}\thesubsubsection}{0.75em}{}
 \titleformat{\paragraph}[runin]
   {\sffamily\bfseries\small\color{ipInk}}{}{0pt}{}[.]
-\titlespacing*{\section}{0pt}{1.9em plus .4em}{0.7em}
-\titlespacing*{\subsection}{0pt}{1.3em plus .3em}{0.45em}
-\titlespacing*{\subsubsection}{0pt}{1.0em}{0.3em}
-\titlespacing*{\paragraph}{0pt}{0.6em}{0.6em}
+\titlespacing*{\section}{0pt}{1.35em plus .25em}{0.5em}
+\titlespacing*{\subsection}{0pt}{1.0em plus .2em}{0.35em}
+\titlespacing*{\subsubsection}{0pt}{0.8em}{0.25em}
+\titlespacing*{\paragraph}{0pt}{0.5em}{0.5em}
 
 % ---------------------------------------------------------------- captions
 \RequirePackage{caption}
@@ -144,14 +144,14 @@
   \g@addto@macro\IP@metainline{%
     \mbox{{\sffamily\bfseries\normalsize\color{black}#1}\enspace
       {\hypersetup{urlcolor=black}\normalsize\color{black}#2}}\quad}}
-\renewcommand{\date}[1]{\metadata{Date}{#1}}
-\newcommand{\correspondence}[1]{\metadata{Contact}{#1}}
+\renewcommand{\date}[1]{\ifblank{#1}{}{\metadata{Date}{#1}}}
+\newcommand{\correspondence}[1]{\ifblank{#1}{}{\metadata{Contact}{#1}}}
 \newcommand{\linkitem}[3]{\g@addto@macro\IP@links{%
   \mbox{\href{#3}{\sffamily\normalsize\bfseries\color{black}#2}}\quad}}
-\newcommand{\code}[1]{\linkitem{\faGithub}{Code}{#1}}
-\newcommand{\project}[1]{\linkitem{\faGlobe}{Project}{#1}}
-\newcommand{\data}[1]{\linkitem{\faDatabase}{Data}{#1}}
-\newcommand{\model}[1]{\linkitem{\faCube}{Model}{#1}}
+\newcommand{\code}[1]{\ifblank{#1}{}{\linkitem{\faGithub}{Code}{#1}}}
+\newcommand{\project}[1]{\ifblank{#1}{}{\linkitem{\faGlobe}{Project}{#1}}}
+\newcommand{\data}[1]{\ifblank{#1}{}{\linkitem{\faDatabase}{Data}{#1}}}
+\newcommand{\model}[1]{\ifblank{#1}{}{\linkitem{\faCube}{Model}{#1}}}
 
 \ifdefstring{\IP@titlealign}{center}
   {\newcommand{\IP@align}{\centering}}
@@ -216,6 +216,18 @@
     \vspace{0.35em}{\color{ipInk}\IP@metainline\unskip\par}%
   \fi}
 
+\newcommand{\IP@rigorousinfoblock}{%
+  \ifx\IP@links\@empty
+    \ifx\IP@meta\@empty\else
+      \vspace{0.35em}{\color{ipInk}\IP@metainline\unskip\par}%
+    \fi
+  \else
+    \vspace{0.35em}{\IP@links\unskip
+      \ifx\IP@meta\@empty\else
+        \hspace{0.5em}\color{ipInk}\IP@metainline\unskip
+      \fi\par}%
+  \fi}
+
 \newcommand{\IP@openstyle}{%
   \begingroup\IP@align
     \IP@heading\IP@linksblock\IP@metablock
@@ -232,14 +244,14 @@
 
 \newcommand{\IP@rigorousstyle}{%
   \begingroup\IP@align
-    \IP@rigorousheading\IP@linksblock\IP@rigorousmetablock
+    \IP@rigorousheading\IP@rigorousinfoblock
   \endgroup
   \ifx\IP@abstract\@empty\else
-    \vspace{0.75em}%
+    \vspace{0.55em}%
     \begin{tcolorbox}[enhanced,colback=ipAbstractBlue,colframe=ipAbstractBorder,
-      boxrule=0.4pt,arc=2pt,left=16pt,right=16pt,top=11pt,bottom=12pt]
+      boxrule=0.4pt,arc=2pt,left=12pt,right=12pt,top=8pt,bottom=9pt]
       {\sffamily\bfseries\small\color{ipInk}Abstract\par}\vspace{0.35em}
-      {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}
+      {\small\linespread{1.08}\selectfont\color{ipInk}\noindent\IP@abstract\par}
     \end{tcolorbox}%
   \fi}
 

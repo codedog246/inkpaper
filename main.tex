@@ -22,10 +22,10 @@
 
 % Replace these text marks with institutional logo files if available.
 \leftlogo{{\sffamily\bfseries\small\color{ipAccent}University Name}}
-\rightlogo{\begin{tabular}{r}
-  \sffamily\bfseries\scriptsize Research Lab\\[-1pt]
-  \sffamily\scriptsize\color{ipGray}Institute Name
-\end{tabular}}
+\rightlogo{{\sffamily\scriptsize\begin{tabular}[b]{@{}r@{}}
+  \bfseries Research Lab\\[-1pt]
+  \color{ipGray}Institute Name
+\end{tabular}}}
 \firstpagenote{Preprint. Correspondence:
   \href{mailto:author@example.com}{\texttt{author@example.com}}.}
 
@@ -99,7 +99,7 @@ Our contributions are as follows:
   \item We evaluate on four long-form benchmarks and two model scales.
 \end{itemize}
 
-\begin{takeaway}
+\begin{takeaway}[label=tk:main]
 \textbf{Judge uncertainty identifies the rubric criteria most vulnerable to
 reward hacking.} Most exploitation concentrates on a small set of criteria
 where the judge was already uncertain before policy optimization.
@@ -118,6 +118,12 @@ criteria. We instead use
 \end{equation}
 where $\rho_k(x) \in [0,1]$ is the estimated reliability of the judge on
 criterion $c_k$.
+
+\begin{observation}
+\textbf{Judge disagreement is concentrated.} A small fraction of criteria
+accounts for most of the judge's vote entropy, and these are predominantly
+stylistic rather than factual criteria.
+\end{observation}
 
 \paragraph{Estimating reliability} We sample the judge $m$ times per
 criterion and set $\rho_k$ to one minus the normalized entropy of its votes.
@@ -164,7 +170,7 @@ policy exploits unreliable criteria; reliability weighting keeps improving.}
 benchmarks. Best values are shown in bold.}
 \label{tab:main}
 \small
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{lcccc}
 \toprule
 Method & HealthBench-Hard & ResearchQA & ScholarQA & Avg. \\
 \midrule
@@ -178,6 +184,12 @@ Rubric dropout      & 38.0 & 55.7 & 57.9 & 50.5 \\
 
 Table~\ref{tab:main} reports the main results and Figure~\ref{fig:curve}
 shows the training dynamics.
+
+\begin{finding}
+Reliability weighting improves gold judge scores on every benchmark while
+leaving in-domain rubric reward unchanged, consistent with
+Takeaway~\ref{tk:main}.
+\end{finding}
 
 \begin{practicalguidance}
 \textbf{Calibrate the judge before starting reinforcement learning.} Sample

@@ -260,9 +260,10 @@
 \renewcommand{\maketitle}{%
   \ifdefstring{\IP@titlestyle}{panel}{\ifx\IP@panellogo\@empty\else
     \let\IP@leftlogo\@empty\let\IP@rightlogo\@empty\fi}{}%
-  \ifx\IP@leftlogo\@empty\ifx\IP@rightlogo\@empty
-    \thispagestyle{plain}\else\thispagestyle{ipfirst}\fi
-  \else\thispagestyle{ipfirst}\fi
+  \ifdefstring{\IP@titlestyle}{rigorous}{\thispagestyle{ipfirst}}{%
+    \ifx\IP@leftlogo\@empty\ifx\IP@rightlogo\@empty
+      \thispagestyle{plain}\else\thispagestyle{ipfirst}\fi
+    \else\thispagestyle{ipfirst}\fi}%
   \ifdefstring{\IP@titlestyle}{panel}{\IP@panelstyle}{%
     \ifdefstring{\IP@titlestyle}{open}{\IP@openstyle}{\IP@rigorousstyle}}%
   \ifx\IP@firstnote\@empty\else

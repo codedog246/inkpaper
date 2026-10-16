@@ -1,5 +1,5 @@
-\documentclass[palette=navy,titlestyle=rigorous,titlealign=left]{inkpaper}
-% Other looks: titlestyle=open|panel, titlealign=center, palette=teal|slate
+\documentclass[palette=navy,titlestyle=rigorous,titlealign=center]{inkpaper}
+% Other looks: titlestyle=open|panel, titlealign=left, palette=teal|slate
 
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
@@ -7,8 +7,8 @@
 \title{Calibrated Critics: Learning When to Trust\\Rubric Rewards in Open-Ended RL}
 \shorttitle{Calibrated Critics}
 \papertag{Preprint}
-\author{Alice Chen\textsuperscript{1,*}, \quad Bo Li\textsuperscript{1,*}, \quad
-  Carlos Diaz\textsuperscript{2}, \quad Dana Park\textsuperscript{1,\dag}}
+\author{Alice Chen\textsuperscript{1,*}, Bo Li\textsuperscript{1,*},
+  Carlos Diaz\textsuperscript{2}, Dana Park\textsuperscript{1,\dag}}
 \affiliations{\textsuperscript{1}Affiliation One \quad
   \textsuperscript{2}Affiliation Two}
 \authornotes{\textsuperscript{*}Equal contribution \quad
@@ -21,11 +21,15 @@
 \data{https://huggingface.co/datasets/your-org}
 \project{https://your-org.github.io/calibrated-critics}
 
-% Real logos: \leftlogo{\includegraphics[height=16pt]{logo/university.pdf}}
-\leftlogo{\placeholderlogo{U}{University Name}}
-\rightlogo{\placeholderlogo[outline]{L}{Research Lab\\Institute Name}}
-\firstpagenote{Preprint, work in progress. Code and checkpoints will be
-  released on the project page.}
+% Replace these text marks with institutional logo files if available:
+% \leftlogo{\includegraphics[height=16pt]{logo/university.pdf}}; or use the
+% built-in badge helper, \leftlogo{\placeholderlogo{U}{University Name}}.
+\leftlogo{{\sffamily\bfseries\small\color{ipAccent}University Name}}
+\rightlogo{\begin{tabular}{r}
+  \sffamily\bfseries\scriptsize Research Lab\\[-1pt]
+  \sffamily\scriptsize\color{ipGray}Institute Name
+\end{tabular}}
+\firstpagenote{Preprint.}
 
 \abstract{Rubric-based reinforcement learning has become a standard way to
 post-train language models on tasks without verifiable answers, yet the judge

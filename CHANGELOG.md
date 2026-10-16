@@ -12,9 +12,14 @@ First tagged release; earlier commits had no version string.
 
 ### Title page and options
 
-- Three title styles: `rigorous` (default; serif title, centred abstract,
-  closing hairline), `open` (tinted abstract box) and `panel` (everything in a
-  tinted box); `titlealign=left|center`; `palette=navy|teal|slate`.
+- Three title styles: `rigorous` (default; Times, bold serif title, abstract
+  in a light blue box, Date/Contact/metadata in the first-page footnote with
+  `\firstpagenote`, black 0.8pt header rule), `open` (tinted abstract box)
+  and `panel` (everything in a tinted box); `titlealign=center|left` (centre
+  is the default); `palette=navy|teal|slate`.
+- Page design from the upstream `rigorous` branch: `newtx` text and math,
+  1.05in side margins, `\linespread{1.03}`, 1.1em paragraph indent, ink
+  `#14171C`; metadata labels and links are bold black sans at text size.
 - `numbers` option for numeric `[1]` citations and `nonatbib` to skip natbib
   so biblatex can be loaded.
 - `a4paper`/`letterpaper` and `11pt`/`12pt` are honoured; headings and the
@@ -25,15 +30,18 @@ First tagged release; earlier commits had no version string.
 - `\thanks{...}` inside `\author` works as in `article`; `\author{A \and B}`
   no longer fails; `\begin{abstract}...\end{abstract}` works in addition to
   the `\abstract{...}` command.
-- `\papertag{}` removes the tag line; `\date{}`, `\correspondence{}` and
-  `\metadata{X}{}` print nothing; wide metadata labels no longer overprint
-  their value; `\shorttitle` falls back to `\title` (line breaks flattened);
-  the running head is set in `ipGray`.
+- `\papertag{}` removes the open/panel tag line and empties the running
+  head; `\date{}`, `\correspondence{}`, `\code{}` and `\metadata{X}{}` print
+  nothing; wide metadata labels no longer overprint their value;
+  `\shorttitle` falls back to `\title` (line breaks flattened; a document
+  with neither gets an empty running head instead of a kernel error); the
+  running head is set in `ipGray`; the first-page header is 32pt high.
 - `\maketitle` writes the PDF Title and Author metadata; `ipLink` colours
-  hyperlinks (steel blue in `slate`, the accent otherwise); the open abstract
-  box and the panel break across pages; the panel footer row is only emitted
-  when non-empty and stacks in `titlealign=center`; the `\thanks` texts and
-  `\firstpagenote` stay on page 1 when the title block fills or breaks past it.
+  hyperlinks (steel blue in `slate`, the accent otherwise); all three abstract
+  renderings and the panel break across pages; the panel footer row is only
+  emitted when non-empty and stacks in `titlealign=center`; the `\thanks`
+  texts and the first-page footnote line stay on page 1 when the title block
+  fills or breaks past it.
 
 ### Callouts and body
 
@@ -41,12 +49,12 @@ First tagged release; earlier commits had no version string.
   (OKLCH): numbered `takeaway`, `discussion`, `practicalguidance` and
   `observation` boxes with solid title bars on a lightness ladder;
   `finding` (and its legacy name `keybox`) as the quiet member; `promptbox`
-  as the neutral member; one label voice shared with the PREPRINT tag.
+  as the neutral member; one label voice (sans bold tracked caps).
 - `promptbox*`: verbatim variant for raw prompts, JSON and templates
   (`{ } _ # % & \` literal, source line breaks kept, common non-ASCII
   punctuation mapped).
 - `\placeholderlogo[fill|outline]{Mark}{Text\\Text}` for header logos that
-  need no image files or extra packages.
+  need no image files or extra packages (the example uses plain text marks).
 - `\sidefigure[ratio]<placement>{content}{caption}` accepts a float
   placement (default `t`); a bare specifier in the bracket slot is accepted
   too.
@@ -62,6 +70,9 @@ First tagged release; earlier commits had no version string.
   `\figurewidth`/`\figureheight` lengths, active only when the document loads
   pgfplots; float policy lets a page be mostly float before it is pushed;
   `\frenchspacing` by default (`\nonfrenchspacing` restores double spaces).
+- A `\section` immediately followed by a `\subsection` can no longer be
+  split across a page break (the heading colour whatsit no longer sits in
+  the vertical list between them).
 
 ### Tooling
 
@@ -72,5 +83,5 @@ First tagged release; earlier commits had no version string.
 - `.latexmkrc` fixes pdfLaTeX, `-halt-on-error` and `-file-line-error`, and
   cleans the `.ptc` and `.listing` scratch files.
 - GitHub Actions workflow (`.github/workflows/build.yml`) rebuilds the
-  example, fails if the committed `main.pdf` is stale, runs the colour gates
+  example, warns if the committed `main.pdf` is stale, runs the colour gates
   and uploads the PDF.

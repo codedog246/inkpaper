@@ -5,7 +5,7 @@
 \RequirePackage{iftex}
 \ifpdftex\else
   \ClassError{inkpaper}{inkpaper requires pdflatex}
-    {This class loads Type 1 fonts (newpx, sourcesanspro, zi4) via fontenc/inputenc,\MessageBreak
+    {This class loads Type 1 fonts (newtx, sourcesanspro, zi4) via fontenc/inputenc,\MessageBreak
      which do not work under xelatex/lualatex (no TU encoding for zi4).\MessageBreak
      Compile with: latexmk -pdf main.tex}%
   \expandafter\@@end
@@ -15,7 +15,7 @@
 \RequirePackage{etoolbox}
 \SetupKeyvalOptions{family=IP,prefix=IP@}
 \DeclareStringOption[navy]{palette}      % navy | teal | slate
-\DeclareStringOption[left]{titlealign}   % left | center
+\DeclareStringOption[center]{titlealign} % center | left
 \DeclareStringOption[rigorous]{titlestyle} % rigorous | open | panel
 \DeclareBoolOption{numbers}              % numeric citations instead of author-year
 \DeclareBoolOption{nonatbib}             % skip natbib so biblatex can be used
@@ -35,13 +35,14 @@
 \newcommand{\IP@fontsize}[2]{\fontsize{#1\IP@base}{#2\IP@base}\selectfont}
 
 % ---------------------------------------------------------------- layout
-% headheight 32pt: room for a 16pt logo badge with two lines of text in the
-% first-page header without fancyhdr's headheight warning.
-\RequirePackage[top=1.05in,bottom=1.0in,left=1.2in,right=1.2in,
+% No hard-coded paper size: a4paper/letterpaper reach geometry through
+% article (default US Letter).  headheight 32pt: room for a two-line logo in
+% the first-page header without fancyhdr's headheight warning.
+\RequirePackage[top=1.05in,bottom=1.0in,left=1.05in,right=1.05in,
   headheight=32pt,headsep=0.25in,footskip=0.45in]{geometry}
-\linespread{1.06}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.55em plus 0.1em}
+\linespread{1.03}
+\setlength{\parindent}{1.1em}
+\setlength{\parskip}{0.12em plus 0.04em}
 % Single inter-sentence space; \nonfrenchspacing in the preamble restores
 % TeX's wider sentence space.
 \frenchspacing
@@ -57,10 +58,10 @@
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
 \RequirePackage{amsmath}
-\RequirePackage{amssymb}   % must precede newpxmath (newpx docs)
-\RequirePackage{amsthm}    % must precede newpxmath (\openbox clash)
-\RequirePackage{newpxtext}
-\RequirePackage{newpxmath}
+\RequirePackage{amssymb}   % must precede newtxmath (\Bbbk already defined otherwise)
+\RequirePackage{amsthm}    % must precede newtxmath (\openbox clash)
+\RequirePackage{newtxtext}
+\RequirePackage{newtxmath}
 \RequirePackage[scale=0.95]{sourcesanspro}
 \RequirePackage[varqu,scaled=0.95]{zi4}
 % Font expansion is enabled automatically in PDF mode; an explicit
@@ -69,9 +70,11 @@
 
 % ---------------------------------------------------------------- colors
 \RequirePackage[table]{xcolor}
-\definecolor{ipInk}{HTML}{1B1F27}
+\definecolor{ipInk}{HTML}{14171C}
 \definecolor{ipGray}{HTML}{5F6672}
 \definecolor{ipFaint}{HTML}{8A919C}
+\definecolor{ipAbstractBlue}{HTML}{E7F0FA}
+\definecolor{ipAbstractBorder}{HTML}{AFC5DF}
 \ifdefstring{\IP@palette}{teal}{%
   \definecolor{ipAccent}{HTML}{1D5C63}%
   \colorlet{ipLink}{ipAccent}%
@@ -89,13 +92,13 @@
   \definecolor{ipRule}{HTML}{C9D2DF}%
 }}
 % Option validation: a typo must stop with a class error, not silently fall
-% back to navy / rigorous / left.
+% back to navy / rigorous / center.
 \ifboolexpr{test{\ifdefstring{\IP@palette}{navy}} or test{\ifdefstring{\IP@palette}{teal}} or test{\ifdefstring{\IP@palette}{slate}}}{}{%
   \ClassError{inkpaper}{Unknown palette '\IP@palette'}{Use palette=navy, teal, or slate.}}
 \ifboolexpr{test{\ifdefstring{\IP@titlestyle}{rigorous}} or test{\ifdefstring{\IP@titlestyle}{open}} or test{\ifdefstring{\IP@titlestyle}{panel}}}{}{%
   \ClassError{inkpaper}{Unknown titlestyle '\IP@titlestyle'}{Use titlestyle=rigorous, open, or panel.}}
-\ifboolexpr{test{\ifdefstring{\IP@titlealign}{left}} or test{\ifdefstring{\IP@titlealign}{center}}}{}{%
-  \ClassError{inkpaper}{Unknown titlealign '\IP@titlealign'}{Use titlealign=left or center.}}
+\ifboolexpr{test{\ifdefstring{\IP@titlealign}{center}} or test{\ifdefstring{\IP@titlealign}{left}}}{}{%
+  \ClassError{inkpaper}{Unknown titlealign '\IP@titlealign'}{Use titlealign=center or left.}}
 % Semantic callout colours.  Generated per palette by semantic_palette.py
 % (OKLCH) so the four coloured callouts follow the palette accent instead of
 % four unrelated hard-coded hues: Takeaway = accent hue, Discussion = accent
@@ -184,11 +187,7 @@
   urlcolor=ipLink,pdfborder={0 0 0}}
 
 % ---------------------------------------------------------------- label voice
-% One label voice for the document: sans tracked caps.  On the title page
-% (tag, Date, Contact, Abstract) it is scriptsize regular in gray; in the
-% callouts it is footnotesize bold (white on a bar, accent on a finding).
-\newcommand{\IP@label}[1]{{\sffamily\scriptsize\color{ipGray}%
-  \textls[140]{\MakeUppercase{#1}}}}
+% Callout labels: sans bold tracked caps (white on a bar, accent on a finding).
 \newcommand{\IP@boxlabel}{\sffamily\bfseries\footnotesize}
 \newcommand{\IP@boxcaps}[1]{\textls[110]{\MakeUppercase{#1}}}
 
@@ -199,15 +198,20 @@
 \renewcommand{\arraystretch}{1.12}
 
 % ---------------------------------------------------------------- headings
+% The heading ink is set in the before-code argument (horizontal mode), not
+% in the format argument: a \color there runs in vertical mode and leaves a
+% whatsit in the vertical list, which turns the glue after it into a legal
+% page break even under \@afterheading's nobreak, so a \section could be
+% stranded at the foot of a page with its \subsection on the next.
 \titleformat{\section}
-  {\sffamily\bfseries\IP@fontsize{1.25}{1.5}\color{ipInk}}
-  {\color{ipAccent}\thesection}{0.75em}{}
+  {\sffamily\bfseries\IP@fontsize{1.25}{1.5}}
+  {\color{ipAccent}\thesection}{0.75em}{\color{ipInk}}
 \titleformat{\subsection}
-  {\sffamily\bfseries\IP@fontsize{1.05}{1.3}\color{ipInk}}
-  {\color{ipAccent}\thesubsection}{0.75em}{}
+  {\sffamily\bfseries\IP@fontsize{1.05}{1.3}}
+  {\color{ipAccent}\thesubsection}{0.75em}{\color{ipInk}}
 \titleformat{\subsubsection}
-  {\sffamily\bfseries\small\color{ipInk}}
-  {\color{ipAccent}\thesubsubsection}{0.75em}{}
+  {\sffamily\bfseries\small}
+  {\color{ipAccent}\thesubsubsection}{0.75em}{\color{ipInk}}
 % Run-in heads get a trailing period automatically, unless the title already
 % ends in terminal punctuation (so \paragraph{Title.} does not render "Title..").
 \ExplSyntaxOn
@@ -224,10 +228,10 @@
 \ExplSyntaxOff
 \titleformat{\paragraph}[runin]
   {\sffamily\bfseries\small\color{ipInk}}{}{0pt}{\IP@runintitle}
-\titlespacing*{\section}{0pt}{1.9em plus .4em}{0.7em}
-\titlespacing*{\subsection}{0pt}{1.3em plus .3em}{0.45em}
-\titlespacing*{\subsubsection}{0pt}{1.0em}{0.3em}
-\titlespacing*{\paragraph}{0pt}{0.6em}{0.6em}
+\titlespacing*{\section}{0pt}{1.35em plus .25em}{0.5em}
+\titlespacing*{\subsection}{0pt}{1.0em plus .2em}{0.35em}
+\titlespacing*{\subsubsection}{0pt}{0.8em}{0.25em}
+\titlespacing*{\paragraph}{0pt}{0.5em}{0.5em}
 
 % ---------------------------------------------------------------- captions
 \RequirePackage{caption}
@@ -295,7 +299,7 @@
 % \abstract{...} (preamble command) and \begin{abstract}...\end{abstract}
 % (environment, before or after \maketitle) both work.  Used after
 % \maketitle the environment typesets the abstract in place (rigorous and
-% panel styles use the rigorous block there, since the title block has
+% panel styles use the rigorous box there, since the title block has
 % already been shipped).
 \newif\ifIP@titledone
 \newcommand{\IP@abstractcmd}[1]{\long\gdef\IP@abstract{#1}}
@@ -308,34 +312,30 @@
 \newcommand{\rightlogo}[1]{\renewcommand{\IP@rightlogo}{#1}}
 \newcommand{\panellogo}[1]{\renewcommand{\IP@panellogo}{#1}}
 \newcommand{\firstpagenote}[1]{\renewcommand{\IP@firstnote}{#1}}
-% \metadata{<label>}{<value>}: an empty value prints nothing (so \date{} and
-% \correspondence{} are no-ops); a label wider than the 6.2em column is set at
+% \metadata{<label>}{<value>}: an empty value prints nothing (so
+% \metadata{X}{} is a no-op); a label wider than the 6.2em column is set at
 % its natural width + 0.8em instead of being overprinted by the value.
+\newcommand{\IP@metalabel}[1]{{\sffamily\bfseries\normalsize\color{black}#1}}
 \newcommand{\metadata}[2]{\ifblank{#2}{}{%
   \g@addto@macro\IP@meta{%
-    \sbox\@tempboxa{\IP@label{#1}}%
+    \sbox\@tempboxa{\IP@metalabel{#1}}%
     \ifdim\wd\@tempboxa>\dimexpr6.2em-0.8em\relax
       \usebox\@tempboxa\hspace{0.8em}%
     \else\makebox[6.2em][l]{\usebox\@tempboxa}\fi
-    {\small #2}\par}%
+    {\hypersetup{urlcolor=black}\normalsize\color{black}#2}\par}%
   \g@addto@macro\IP@metainline{%
-    \mbox{\IP@label{#1}\enspace{\small #2}}\qquad}}}
-\renewcommand{\date}[1]{\metadata{Date}{#1}}
-\newcommand{\correspondence}[1]{\metadata{Contact}{#1}}
-% \linkitem{<icon>}{<word>}{<url>}: a small accent icon (FontAwesome; may be
-% empty) and the word in regular sans; items are separated by faint middle
-% dots.  The 3-argument signature is unchanged from earlier releases.
-\newcommand{\IP@linksep}{\hspace{0.7em}{\color{ipFaint}\textperiodcentered}\hspace{0.7em}}
-\newcommand{\linkitem}[3]{%
-  \ifx\IP@links\@empty\else\g@addto@macro\IP@links{\IP@linksep}\fi
-  \ifblank{#1}%
-    {\g@addto@macro\IP@links{\mbox{\href{#3}{\sffamily\footnotesize\color{ipInk}#2}}}}%
-    {\g@addto@macro\IP@links{\mbox{\href{#3}{{\footnotesize\color{ipAccent}#1}\hspace{0.35em}%
-      {\sffamily\footnotesize\color{ipInk}#2}}}}}}
-\newcommand{\code}[1]{\linkitem{\faGithub}{Code}{#1}}
-\newcommand{\project}[1]{\linkitem{\faGlobe}{Project}{#1}}
-\newcommand{\data}[1]{\linkitem{\faDatabase}{Data}{#1}}
-\newcommand{\model}[1]{\linkitem{\faCube}{Model}{#1}}
+    \mbox{\IP@metalabel{#1}\enspace
+      {\hypersetup{urlcolor=black}\normalsize\color{black}#2}}\quad}}}
+\renewcommand{\date}[1]{\ifblank{#1}{}{\metadata{Date}{#1}}}
+\newcommand{\correspondence}[1]{\ifblank{#1}{}{\metadata{Contact}{#1}}}
+% \linkitem{<icon>}{<word>}{<url>}: the word in bold sans; the icon argument
+% is accepted for source compatibility (it may be empty) and not printed.
+\newcommand{\linkitem}[3]{\g@addto@macro\IP@links{%
+  \mbox{\href{#3}{\sffamily\normalsize\bfseries\color{black}#2}}\quad}}
+\newcommand{\code}[1]{\ifblank{#1}{}{\linkitem{\faGithub}{Code}{#1}}}
+\newcommand{\project}[1]{\ifblank{#1}{}{\linkitem{\faGlobe}{Project}{#1}}}
+\newcommand{\data}[1]{\ifblank{#1}{}{\linkitem{\faDatabase}{Data}{#1}}}
+\newcommand{\model}[1]{\ifblank{#1}{}{\linkitem{\faCube}{Model}{#1}}}
 
 % Placeholder logos that need no image files and no extra packages:
 %   \leftlogo{\placeholderlogo{U}{University Name}}
@@ -363,8 +363,11 @@
 \newcommand{\IP@pagenumber}{\sffamily\footnotesize\color{ipGray}\thepage}
 \pagestyle{fancy}
 \fancyhf{}
+% A document that sets neither (and never calls \maketitle) gets an empty
+% running head instead of the kernel's "No \title given" error.
+\def\IP@notitle{\@latex@error{No \noexpand\title given}\@ehc}
 \fancyhead[L]{\sffamily\scriptsize\color{ipGray}%
-  \ifdefempty{\IP@short}{\let\\\space\@title}{\IP@short}}
+  \ifdefempty{\IP@short}{\ifx\@title\IP@notitle\else\let\\\space\@title\fi}{\IP@short}}
 \fancyhead[R]{\sffamily\scriptsize\color{ipGray}\MakeUppercase{\IP@tag}}
 \fancyfoot[C]{\IP@pagenumber}
 \renewcommand{\headrule}{{\color{ipRule}\hrule height 0.4pt}}
@@ -375,12 +378,14 @@
   \fancyhead[L]{\IP@leftlogo}%
   \fancyhead[R]{\IP@rightlogo}%
   \fancyfoot[C]{\IP@pagenumber}%
-  \renewcommand{\headrule}{\vspace{4pt}{\color{ipAccent}\hrule height 0.5pt}}}
+  \renewcommand{\headrule}{\vspace{4pt}{\color{black}\hrule height 0.8pt}}}
 
 % ---------------------------------------------------------------- title block
-% \papertag{} suppresses the tag line and its gap; \and inside \author is a
-% \quad separator (scoped to the author group, so it keeps its kernel meaning
-% elsewhere).
+% \papertag{} suppresses the tag line and its gap (open/panel); \and inside
+% \author is a \quad separator (scoped to the author group, so it keeps its
+% kernel meaning elsewhere).  Sizes are multiples of the body size
+% (\IP@fontsize): 21/26 and 10.5/14 for open/panel, 19/23 and 10/12.5 for
+% rigorous at 10pt.
 \newcommand{\IP@heading}{%
   \ifx\IP@tag\@empty\else
   {\sffamily\bfseries\scriptsize\color{ipAccent}%
@@ -395,19 +400,21 @@
     \vspace{0.2em}{\footnotesize\color{ipGray}\IP@notes\par}\fi}
 
 \newcommand{\IP@rigorousheading}{%
-  \ifx\IP@tag\@empty\else{\IP@label{\IP@tag}\par}\vspace{0.8em}\fi
-  {\bfseries\IP@fontsize{2.2}{2.7}\color{ipInk}\@title\par}%
-  \vspace{0.9em}
-  {\IP@fontsize{1.05}{1.4}\color{ipInk}%
+  {\bfseries\IP@fontsize{1.9}{2.3}\color{ipInk}\@title\par}%
+  \vspace{0.6em}
+  {\bfseries\IP@fontsize{1.0}{1.25}\color{ipInk}%
     \renewcommand{\and}{\unskip\quad}\@author\par}%
-  \ifx\IP@affil\@empty\else
-    \vspace{0.4em}{\small\color{ipGray}\IP@affil\par}\fi
-  \ifx\IP@notes\@empty\else
-    \vspace{0.15em}{\footnotesize\color{ipGray}\IP@notes\par}\fi}
+  \ifx\IP@affil\@empty
+    \ifx\IP@notes\@empty\else
+      \vspace{0.2em}{\footnotesize\color{ipGray}\IP@notes\par}\fi
+  \else
+    \vspace{0.45em}{\small\color{ipGray}\IP@affil%
+      \ifx\IP@notes\@empty\else\quad{\footnotesize\IP@notes}\fi\par}%
+  \fi}
 
 \newcommand{\IP@linksblock}{%
   \ifx\IP@links\@empty\else
-    \vspace{0.8em}{\IP@links\unskip\par}\fi}
+    \vspace{0.45em}{\IP@links\unskip\par}\fi}
 
 \newcommand{\IP@metablock}{%
   \ifx\IP@meta\@empty\else
@@ -417,19 +424,50 @@
       {{\color{ipInk}\IP@meta}}%
   \fi}
 
+\newcommand{\IP@rigorousmetablock}{%
+  \ifx\IP@meta\@empty\else
+    \vspace{0.35em}{\color{ipInk}\IP@metainline\unskip\par}%
+  \fi}
+
+\newcommand{\IP@rigorousinfoblock}{%
+  \ifx\IP@links\@empty
+    \ifx\IP@meta\@empty\else
+      \vspace{0.35em}{\color{ipInk}\IP@metainline\unskip\par}%
+    \fi
+  \else
+    \vspace{0.35em}{\IP@links\unskip
+      \ifx\IP@meta\@empty\else
+        \hspace{0.5em}\color{ipInk}\IP@metainline\unskip
+      \fi\par}%
+  \fi}
+
 % Title footnotes.  They are emitted before the abstract (rigorous and open:
 % right after the heading; panel: the first-page note before the box, since a
 % footnote cannot be placed from inside it), so that a title block which fills
 % page 1 or breaks onto page 2 still puts its notes on page 1.  Order at the
 % foot of the page: \thanks texts, then the first-page note (panel: the note
-% first, the \thanks texts after the box).  Both macros are idempotent.
+% first, the \thanks texts after the box).  In the rigorous style the
+% first-page note shares one footnote with the Date/Contact/\metadata line
+% (\IP@rigorousfooter).  Both emitters are idempotent.
 \newif\ifIP@notesdone
+\newcommand{\IP@printrigorousfooter}{%
+  \begingroup\renewcommand{\thefootnote}{}%
+  \footnotetext{%
+    {\footnotesize\color{ipGray}\IP@firstnote}%
+    \ifx\IP@firstnote\@empty\else\quad\fi
+    \IP@metainline}%
+  \endgroup}
+\newcommand{\IP@rigorousfooter}{%
+  \ifx\IP@firstnote\@empty
+    \ifx\IP@meta\@empty\else\IP@printrigorousfooter\fi
+  \else\IP@printrigorousfooter\fi}
 \newcommand{\IP@firstnotetext}{%
   \ifIP@notesdone\else
-    \ifx\IP@firstnote\@empty\else
-      \begingroup\renewcommand{\thefootnote}{}%
-      \footnotetext{\color{ipGray}\IP@firstnote}\endgroup
-    \fi
+    \ifdefstring{\IP@titlestyle}{rigorous}{\IP@rigorousfooter}{%
+      \ifx\IP@firstnote\@empty\else
+        \begingroup\renewcommand{\thefootnote}{}%
+        \footnotetext{\color{ipGray}\IP@firstnote}\endgroup
+      \fi}%
     \global\IP@notesdonetrue
   \fi}
 \newcommand{\IP@titlenotes}{\@thanks\global\let\@thanks\@empty\IP@firstnotetext}
@@ -444,24 +482,15 @@
     {\sffamily\bfseries\small\color{ipAccent}Abstract\par}\vspace{0.35em}
     {\small\linespread{1.12}\selectfont\color{ipInk}\IP@abstract\par}
   \end{tcolorbox}}
-% Rigorous: a plain paragraph block with the geometry of the former
-% \begin{center}\begin{minipage}{0.90\linewidth} (trivlist skips above and
-% below, \lineskip at the top, no \parskip inside, \sloppy), so the output is
-% unchanged but the block can break across pages.
 \newcommand{\IP@rigorousabstractbox}{%
-  \par\vspace{1.1em}%
-  \begingroup
-    \vskip\topsep\vskip\partopsep\vskip\parskip
-    \setlength{\leftskip}{0.05\linewidth}\setlength{\rightskip}{0.05\linewidth}%
-    \setlength{\parskip}{\z@}\setlength{\parindent}{\z@}\sloppy
-    \nointerlineskip\vskip\lineskip
-    {\IP@label{Abstract}\par}\nobreak\vspace{0.45em}
-    {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}
-    \vskip\topsep\vskip\partopsep
-  \endgroup
-  \vspace{0.5em}}
+  \vspace{0.55em}%
+  \begin{tcolorbox}[enhanced,breakable,colback=ipAbstractBlue,colframe=ipAbstractBorder,
+    boxrule=0.4pt,arc=2pt,left=12pt,right=12pt,top=8pt,bottom=9pt]
+    {\sffamily\bfseries\small\color{ipInk}Abstract\par}\vspace{0.35em}
+    {\small\linespread{1.08}\selectfont\color{ipInk}\noindent\IP@abstract\par}
+  \end{tcolorbox}}
 % \begin{abstract} after \maketitle: typeset in place in the style's voice
-% (panel falls back to the rigorous block; its inline abstract cannot be added
+% (panel falls back to the rigorous box; its inline abstract cannot be added
 % once the panel has been shipped).
 \newcommand{\IP@abstractbox}{%
   \ifdefstring{\IP@titlestyle}{open}{\IP@openabstractbox}{\IP@rigorousabstractbox}}
@@ -475,15 +504,10 @@
 
 \newcommand{\IP@rigorousstyle}{%
   \begingroup\IP@align
-    \IP@rigorousheading\IP@linksblock\IP@metablock
+    \IP@rigorousheading\IP@linksblock
   \endgroup
   \IP@titlenotes
-  \ifx\IP@abstract\@empty
-    \vspace{0.9em}%
-  \else
-    \IP@rigorousabstractbox
-  \fi
-  {\color{ipRule}\hrule height 0.45pt}}
+  \ifx\IP@abstract\@empty\else\IP@rigorousabstractbox\fi}
 
 \newcommand{\IP@panelstyle}{%
   \begin{tcolorbox}[enhanced,breakable,colback=ipPanel,boxrule=0pt,frame hidden,
@@ -534,9 +558,10 @@
   \@ifundefined{H@@footnotetext}{}{\let\@footnotetext\H@@footnotetext}%
   \ifdefstring{\IP@titlestyle}{panel}{\ifx\IP@panellogo\@empty\else
     \let\IP@leftlogo\@empty\let\IP@rightlogo\@empty\fi}{}%
-  \ifx\IP@leftlogo\@empty\ifx\IP@rightlogo\@empty
-    \thispagestyle{plain}\else\thispagestyle{ipfirst}\fi
-  \else\thispagestyle{ipfirst}\fi
+  \ifdefstring{\IP@titlestyle}{rigorous}{\thispagestyle{ipfirst}}{%
+    \ifx\IP@leftlogo\@empty\ifx\IP@rightlogo\@empty
+      \thispagestyle{plain}\else\thispagestyle{ipfirst}\fi
+    \else\thispagestyle{ipfirst}\fi}%
   \ifdefstring{\IP@titlestyle}{panel}{\IP@firstnotetext\IP@panelstyle}{%
     \ifdefstring{\IP@titlestyle}{open}{\IP@openstyle}{\IP@rigorousstyle}}%
   \IP@titlenotes
@@ -548,11 +573,11 @@
 
 % ---------------------------------------------------------------- boxes
 % One callout family.  Shared tokens: 0.45pt rules, square corners, a 10pt
-% inset, \small body, one label voice (sans bold tracked caps, the same voice
-% as the PREPRINT tag and the running head).  The four semantic boxes add a
-% solid title bar in their hue over a tint of the same hue; finding/keybox is
-% the quiet member (accent hairlines over the accent tint, no bar); promptbox
-% is the neutral member (ipRule frame, white title row, gray label).
+% inset, \small body, one label voice (sans bold tracked caps).  The four
+% semantic boxes add a solid title bar in their hue over a tint of the same
+% hue; finding/keybox is the quiet member (accent hairlines over the accent
+% tint, no bar); promptbox is the neutral member (ipRule frame, white title
+% row, gray label).
 % Frames are drawn as stroked border lines (ipframe), not as tcolorbox's
 % filled frame: a filled 0.45pt frame disappears at screen resolution when
 % its edges straddle a pixel, while a stroke is always rendered at least one

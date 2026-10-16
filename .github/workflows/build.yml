@@ -1,7 +1,7 @@
-# Rebuilds the example with a full TeX Live image, fails if the committed
-# showcase PDF no longer matches the sources (as a warning, since CI's TeX
-# Live may break lines differently), runs the colour gates and uploads
-# main.pdf as an artifact.
+# Rebuilds the example with a full TeX Live image, warns if the committed
+# showcase PDF no longer matches the sources (a warning, not a failure, since
+# CI's TeX Live may break lines differently), runs the colour gates and
+# uploads main.pdf as an artifact.
 name: build
 
 on:

@@ -125,7 +125,7 @@ def dE_cvd(a, b, kind):
     return dE(simulate(a, kind), simulate(b, kind))
 
 # --- system constants ---------------------------------------------------------
-INK = '1B1F27'
+INK = '14171C'
 ACCENTS = {'navy': '1F3B60', 'teal': '1D5C63', 'slate': '3A4556'}
 ROLES = ('Takeaway', 'Discussion', 'Guidance', 'Observation')
 

@@ -8,8 +8,13 @@ fixes and `Q-n` the critique's "missing" items). `CHANGELOG.md` is the short
 release history; `README.md` documents the resulting API.
 
 Constraints that held throughout: colour stays and is improved, not removed;
-the measure, `\parskip`, `\parindent` and the type scale are unchanged; every
-public command keeps its signature; the default `titlestyle` is `rigorous`.
+every public command keeps its signature; the default `titlestyle` is
+`rigorous`. An earlier constraint, that the measure, `\parskip`,
+`\parindent` and the type scale stay unchanged, was superseded by the merge
+with upstream `rigorous` `b8f529f` (Times, 1.05in margins, indented
+paragraphs; section 9). Sections 1-8 record the work as it was done against
+`140aeae`; where section 9 says a title-page item was dropped or re-based,
+section 9 is authoritative.
 
 ## 1. Colour system
 
@@ -69,6 +74,9 @@ public command keeps its signature; the default `titlestyle` is `rigorous`.
   cleveref: `\cref{tk:a}` prints `Takeaway 1` instead of `??`. (R5)
 
 ## 3. Title page, metadata and header
+
+(Several items in this section describe the pre-merge title page and were
+dropped or re-based in the merge; see section 9.)
 
 - First-page header is 32pt high (was 26pt): a two-line logo no longer
   triggers fancyhdr's headheight warning; the body position is unchanged and
@@ -239,7 +247,7 @@ public command keeps its signature; the default `titlestyle` is `rigorous`.
   `$clean_ext = 'ptc listing'`.
 - `.gitignore`: build products only; the dead `build/` and `preview/` entries
   are gone; `main.pdf` and `preview.png` are committed on purpose. (R7)
-- `.github/workflows/build.yml` (new): rebuilds the example, fails if the
+- `.github/workflows/build.yml` (new): rebuilds the example, warns if the
   committed `main.pdf` text differs from the fresh build, runs the colour
   gates, uploads the PDF. (`no-ci-build`)
 - `README.md`: complete option and command tables, callout key and usage
@@ -276,7 +284,8 @@ public command keeps its signature; the default `titlestyle` is `rigorous`.
 - `license-holder-vs-author`: rejected by the review; LICENSE untouched.
 - `\pdfoutput=1` in `main.tex`: arXiv asks not to use it and auto-detects
   pdfLaTeX.
-- From the typography study: the 5.3in measure, 14pt grid, `\parindent`,
+- From the typography study: the 5.3in measure, 14pt grid, `\parindent`
+  (a 1.1em indent arrived later via upstream, section 9),
   extra palettes, `paragraphs=` option, `ipSeries*`/`ipGrid`, footmisc,
   siunitx columns, `notebox`, `\bibhang`, 14pt float separations.
 - From the design critiques: run-in labels, near-monochrome footprint,
@@ -292,20 +301,24 @@ public command keeps its signature; the default `titlestyle` is `rigorous`.
 
 - `biber` is not installed on the build machine, so `[nonatbib]` + biblatex
   was verified with `backend=bibtex`; the class has no backend-specific code.
-- `\begin{abstract}` after `\maketitle` in `rigorous` style sits below the
-  closing hairline; in `panel` style it falls back to the rigorous block.
+- `\begin{abstract}` after `\maketitle` is typeset in place (the blue box
+  in `rigorous`); in `panel` style it falls back to that box.
 - The open abstract box's continuation on page 2 carries no "(continued)"
   label (only the west line and tint).
 - In the left-aligned `panel` style a title block that fills page 1 breaks the
   panel onto page 2 (a short tinted continuation with the metadata rows).
 - The `inkpaper` preset uses `axis lines*=left` (no arrow tips); the demo's
   Figure 2 keeps explicit `axis lines=left` with arrows, so both looks appear.
+- Under `\DocumentMetadata{tagging=on}` (TeX Live 2026) `promptbox*` stops the
+  build with a tagpdf begin/end mismatch error (`listings` is not
+  tagging-aware), and the demo without it still logs a few marked-content
+  warnings; the artifact wrap of the appendix mini-TOC itself works.
 - `zi4` has no italic: `\verb`/`\texttt` inside italic text logs a font-shape
   substitution, as in every earlier release.
 - A `wrapfigure` started near a page bottom can overlap the footer (wrapfig's
   own limitation).
 
-## Verification summary
+## Verification summary (before the merge, against `140aeae`)
 
 - Default demo: `latexmk -C; make` -> 5 pages, PDF Title/Author set, zero
   warnings and zero over/underfull boxes outside microtype's info lines;
@@ -331,3 +344,116 @@ public command keeps its signature; the default `titlestyle` is `rigorous`.
   3-line title, 9 authors, 395-word abstract, no abstract, no links/metadata,
   bare title, box breaking across pages, boxes back to back, box after a
   heading, 10+ enumerate items, body `\tableofcontents`, cleveref names.
+
+## 9. Merged with upstream rigorous `b8f529f`
+
+Upstream moved by 11 commits (`675bb48..b8f529f`) while this work was in
+review. The merge policy was: upstream wins on page design, our fixes are
+re-applied on top of upstream's macros wherever the defect still exists, and
+the colour system and callout family stay ours.
+
+### What upstream changed (kept)
+
+- Fonts: `newtxtext`/`newtxmath` (Times) instead of `newpxtext`/`newpxmath`.
+- `ipInk` `#1B1F27` -> `#14171C`; new `ipAbstractBlue` `#E7F0FA` and
+  `ipAbstractBorder` `#AFC5DF`.
+- Side margins 1.2in -> 1.05in; `\linespread{1.03}`; `\parindent` 1.1em;
+  `\parskip` 0.12em plus 0.04em; tighter `\titlespacing` for all levels.
+- `titlealign` default `center`.
+- Rigorous heading: no tag line; title 19/23 bold serif; authors 10/12.5
+  bold; affiliations and author notes on one line.
+- Rigorous abstract in a tcolorbox (`ipAbstractBlue`, 0.4pt
+  `ipAbstractBorder`, arc 2pt) instead of the hairline block.
+- Metadata labels and values black `\normalsize`; links black bold sans
+  `\normalsize` separated by `\quad`; `\date`, `\correspondence`, `\code`,
+  `\model`, `\data`, `\project` ignore a blank argument (`\ifblank`).
+- Rigorous first page always uses the `ipfirst` page style with a black 0.8pt
+  head rule; Date/Contact/`\metadata` are set in the first-page footnote
+  together with `\firstpagenote` (`\IP@rigorousfooter`,
+  `\IP@printrigorousfooter`); `\IP@rigorousmetablock` and
+  `\IP@rigorousinfoblock` are kept as upstream defined them.
+- `main.tex`: `titlealign=center`, authors separated by commas, two-line
+  text logos, `\firstpagenote{Preprint.}`; README: centre default, `newtx`.
+
+### Ours, dropped in favour of upstream
+
+- The gray tracked-caps title-page label voice (`\IP@label` on the tag,
+  the metadata keys and the `Abstract` heading); the tag line above the
+  rigorous title; regular-weight authors; the 22/27 title size.
+- Icon + middle-dot links (`\IP@linksep`, the FontAwesome icon in
+  `\linkitem`); the three-argument signature is unchanged and the icon
+  argument is accepted and not printed.
+- Our rigorous abstract block (plain paragraph block with hairlines) and the
+  closing hairline; `\IP@rigorousabstractbox` now produces upstream's blue
+  box, made `breakable`.
+- Our metadata table styling (`\IP@label` keys, `\small` values, `\qquad`
+  inline gaps); the rows now use upstream's bold black labels.
+- The accent 0.5pt first-page rule (upstream: black 0.8pt).
+- `main.tex`: the `\placeholderlogo` header marks and the longer first-page
+  note; left alignment; `\quad` between authors.
+
+### Ours, re-based on upstream's macros
+
+- `\and` and `\thanks` in `\IP@rigorousheading`/`\IP@heading`; `\thanks`
+  texts print above the footer line, unlinked, and the footnote counter is
+  reset after `\maketitle` (the "Ignoring empty anchor" warning of upstream's
+  head is gone).
+- The abstract environment, now dispatching to the blue box for `rigorous`
+  (and for `panel` after `\maketitle`).
+- `\papertag{}` guard (open/panel tag line and the running head).
+- `\metadata` blank guard merged with upstream's `\ifblank` on the
+  wrappers; the overflow guard kept, because a bold `\normalsize`
+  `Corresponding author` label is wider than the 6.2em column.
+- `\IP@firstnotetext` dispatches to upstream's `\IP@rigorousfooter` in
+  `rigorous` style and stays idempotent, so a title block that breaks onto
+  page 2 still puts the footer line on page 1.
+- `headheight` 32pt (upstream's text logos trigger the fancyhdr warning at
+  26pt); `a4paper` pass-through; `amssymb`/`amsthm` before `newtxmath` (the
+  clash is the same: `\Bbbk already defined`); the engine-guard message
+  names `newtx`; option validation lists `center` as the default;
+  `\IP@fontsize` scaling applied to upstream's sizes (1.9/2.3 and 1.0/1.25
+  of the body size, identical at 10pt); `ipLink`-coloured hyperlinks.
+- PDF Title/Author, the breakable open box and panel, the panel footer row,
+  `\shorttitle` fallback and the `ipGray` running head (upstream did not
+  touch the running head) are unchanged. The fallback reads `\@title`, so a
+  document that sets neither `\shorttitle` nor `\title` (and never calls
+  `\maketitle`) used to stop at the first shipout with the kernel's "No
+  \title given"; the running head now checks for the kernel's undefined
+  `\@title` and prints nothing in that case. (compatibility matrix)
+- Heading ink moved from `\titleformat`'s format argument to its before-code
+  argument (section, subsection, subsubsection). A `\color` in the format
+  argument runs in vertical mode and leaves a whatsit in the vertical list,
+  which makes the glue after it a legal page break despite `\@afterheading`,
+  so a `\section` could be stranded at the foot of a page with its
+  `\subsection` on the next (reproduced in both this class and upstream's
+  with a section/subsection pair 28-68pt above the page foot; the demo was
+  not affected). Output is otherwise pixel-identical. (visual matrix)
+- `semantic_palette.py`: `INK = '14171C'`. The generated blocks do not depend
+  on the ink, so the class blocks are byte-identical; only the reported
+  bar-vs-ink ratios moved (navy Takeaway 2.30:1, all gates pass).
+
+### Suggestion, not done in this merge
+
+- `ipAbstractBlue`/`ipAbstractBorder` are upstream's fixed hexes and do not
+  follow the `palette` option (in `teal` and `slate` the abstract box stays
+  blue). They could be derived in `semantic_palette.py` from the accent hue
+  at the tint lightness (L 0.95 fill, L 0.80 border), like `ipOurs`.
+
+### Verification after the merge
+
+- `latexmk -C; make`: 4 pages, PDF Title/Author set, zero warnings and zero
+  over/underfull boxes outside microtype's info lines. `make spec`: three
+  one-page specimens, zero warnings. `python3 semantic_palette.py`: ALL GATES
+  PASS with the new ink.
+- Page 1 against upstream's render: Times, centred title, bold authors,
+  links line, blue abstract box, footer `Preprint. Date ... Version ...
+  Contact ...`; the only differences are the header logos and rule sitting
+  about 5pt higher (32pt header; upstream's 26pt box overflowed into the
+  headsep) and the `Version` entry from the demo.
+- Matrix with the merged class: `\thanks` + `\and` in all three styles;
+  `titlealign=left`; `\date{}`/`\correspondence{}`/`\code{}`/`\papertag{}`
+  plus a wide `\metadata` label; no logos; `\begin{abstract}` before and
+  after `\maketitle`; a 1,400-word abstract breaking onto page 2; 11pt and
+  12pt; `a4paper,numbers`; a user `\usepackage{amssymb,amsthm}` (no msam
+  fonts embedded); `palette=blue` and `twocolumn` stop with class errors.
+  All compile with zero warnings.

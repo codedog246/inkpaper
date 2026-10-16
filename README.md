@@ -22,9 +22,10 @@ the main document and the compiler to pdfLaTeX (the zip also contains
 
 - Three low-saturation palettes: `navy`, `teal`, and `slate`
 - Rigorous, open, and panel-style title layouts
-- Left-aligned or centered title blocks
+- Centered (default) or left-aligned title blocks
 - Optional institution and lab logos, with a placeholder-logo helper
 - Metadata links for code, models, data, and project pages
+- Times text and math (`newtx`) with 1.05in side margins
 - Colour-coded, numbered takeaway, discussion, guidance, and observation
   boxes whose colours are derived from the palette accent
 - Formal finding statements, highlighted table rows, side captions, and
@@ -40,7 +41,7 @@ the main document and the compiler to pdfLaTeX (the zip also contains
 \documentclass[
   palette=navy,
   titlestyle=rigorous,
-  titlealign=left
+  titlealign=center
 ]{inkpaper}
 
 \title{Your Paper Title}
@@ -70,7 +71,7 @@ make
 The result is `main.pdf`. The committed `main.pdf` and `preview.png` are the
 showcase output: if you change `main.tex` or `inkpaper.cls`, run `make` and
 `make preview`, then commit the regenerated `main.pdf` and `preview.png` (CI
-rebuilds the example and fails if the committed PDF is stale).
+rebuilds the example and warns if the committed PDF is stale).
 
 `make spec` builds the one-page callout specimen (`spec-navy.pdf`,
 `spec-teal.pdf`, `spec-slate.pdf`), which shows every box in each palette and
@@ -93,15 +94,15 @@ and upload the resulting `main-arxiv.tar.gz`; see
 | Option | Values | Default | Notes |
 | --- | --- | --- | --- |
 | `palette` | `navy`, `teal`, `slate` | `navy` | Sets `ipAccent`, `ipPanel`, `ipRule`, `ipLink` and the generated callout colours |
-| `titlestyle` | `rigorous`, `open`, `panel` | `rigorous` | `rigorous`: serif title, centred abstract, closing hairline; `open`: tinted abstract box; `panel`: title, abstract, links and metadata in one tinted box |
-| `titlealign` | `left`, `center` | `left` | In `center` mode the metadata rows are set on one line; the panel footer (metadata and logo) is stacked and centred |
+| `titlestyle` | `rigorous`, `open`, `panel` | `rigorous` | `rigorous`: bold serif title, abstract in a light blue box, Date/Contact in the first-page footnote; `open`: tinted abstract box; `panel`: title, abstract, links and metadata in one tinted box |
+| `titlealign` | `center`, `left` | `center` | In `center` mode the open/panel metadata rows are set on one line; the panel footer (metadata and logo) is stacked and centred |
 | `numbers` | flag | off | Numeric `[1]` citations; natbib is loaded with `[numbers,sort&compress]` |
 | `nonatbib` | flag | off | Skip natbib so biblatex can be loaded |
 | anything else | e.g. `a4paper`, `11pt`, `draft` | – | Forwarded to `article`: `a4paper`/`letterpaper` set the paper size (default US Letter); `11pt`/`12pt` scale the headings and title with the body. `twocolumn` stops with a class error, and so does a misspelt `palette`/`titlestyle`/`titlealign` value |
 
 The example in the repository uses `palette=navy, titlestyle=rigorous,
-titlealign=left`; the comment on its first line lists the other looks
-(`titlestyle=open`, `titlealign=center`, `palette=teal|slate`).
+titlealign=center`; the comment on its second line lists the other looks
+(`titlestyle=open|panel`, `titlealign=left`, `palette=teal|slate`).
 
 ## Command reference
 
@@ -112,19 +113,19 @@ All of these go in the preamble unless noted. Everything except `\title` and
 | --- | --- | --- |
 | `\title{...}`, `\author{...}` | Standard LaTeX. `\author{A \and B}` works; `\thanks{...}` inside `\author` works as in `article` (symbol marks, text printed above the first-page note in the rigorous and open styles, below it in the panel style; body footnotes restart at 1). `\authornotes` remains available for the compact inline style used in `main.tex` | required |
 | `\shorttitle{...}` | Running head, top-left of every page after the first, set in `ipGray`; falls back to `\title` (line breaks flattened) if omitted | `\title` |
-| `\papertag{...}` | Tracked-caps label above the title and top-right running head; `\papertag{}` removes the tag line | `Preprint` |
+| `\papertag{...}` | Top-right running head (caps); in the `open` and `panel` styles also a tracked-caps label above the title. `\papertag{}` removes the tag line and empties the running head | `Preprint` |
 | `\affiliations{...}` | Line under the authors | empty |
 | `\authornotes{...}` | Smaller line for equal-contribution / corresponding marks | empty |
-| `\abstract{...}` | Abstract text, typeset inside the title block by `\maketitle`. `\begin{abstract}...\end{abstract}` also works, before `\begin{document}`, before `\maketitle`, or after it (then typeset in place). After `\maketitle`, `panel` style falls back to the rigorous layout and `rigorous` style sets the abstract below the closing rule, so prefer giving it before `\maketitle` | empty |
-| `\date{...}` | Adds a `Date` metadata row. Unlike `article`, nothing is printed if you omit it (no `\today` default); `\date{}` prints nothing | none |
-| `\correspondence{...}` | Adds a `Contact` metadata row; an empty value prints nothing | none |
-| `\metadata{Label}{Value}` | Any extra metadata row, e.g. `\metadata{Version}{v1 (under review)}`. An empty value prints nothing; a label wider than the 6.2em column is set at natural width plus a 0.8em gap | – |
-| `\code{url}`, `\model{url}`, `\data{url}`, `\project{url}` | Icon links under the title | – |
-| `\linkitem{\faIcon}{Label}{url}` | Custom icon link using any `fontawesome5` icon; an empty first argument gives a word without an icon | – |
-| `\leftlogo{...}`, `\rightlogo{...}` | First-page header logos: `\placeholderlogo{U}{University Name}` or `\includegraphics[height=16pt]{logo/university.pdf}`. Setting either switches the first page to a header with an accent rule | empty |
+| `\abstract{...}` | Abstract text, typeset by `\maketitle` (in `rigorous` style in a light blue box, `ipAbstractBlue` with an `ipAbstractBorder` frame). `\begin{abstract}...\end{abstract}` also works, before `\begin{document}`, before `\maketitle`, or after it (then typeset in place; `panel` style falls back to the blue box there, since its inline abstract cannot be added once the panel is shipped) | empty |
+| `\date{...}` | Adds a `Date` entry (bold sans label, black). In `rigorous` style the entries are set on one line in the first-page footnote, after `\firstpagenote`; in `open` and `panel` they are rows under the title (one line in `titlealign=center`). Unlike `article`, nothing is printed if you omit it (no `\today` default); `\date{}` prints nothing | none |
+| `\correspondence{...}` | Adds a `Contact` entry; an empty value prints nothing | none |
+| `\metadata{Label}{Value}` | Any extra entry, e.g. `\metadata{Version}{v1 (under review)}`. An empty value prints nothing; in the row layout a label that does not fit the 6.2em column with a 0.8em gap to its value is set at natural width plus a 0.8em gap | – |
+| `\code{url}`, `\model{url}`, `\data{url}`, `\project{url}` | Bold sans links under the title (`Code  Model  Data  Project`); an empty URL prints nothing | – |
+| `\linkitem{\faIcon}{Label}{url}` | Custom link with any label. The first argument is accepted for compatibility (it may be empty) and is not printed | – |
+| `\leftlogo{...}`, `\rightlogo{...}` | First-page header logos: `\includegraphics[height=16pt]{logo/university.pdf}`, a text mark as in `main.tex`, or `\placeholderlogo{U}{University Name}`. The `rigorous` first page always has the header with its black 0.8pt rule; in `open` and `panel` setting a logo switches it on | empty |
 | `\placeholderlogo[fill\|outline]{Mark}{Text\\Text}` | A 16pt badge with the mark plus one or two lines of text; needs no image files or extra packages. `outline` draws the badge as an accent outline with gray text | `fill` |
 | `\panellogo{...}` | Logo inside the panel (only with `titlestyle=panel`). If set, `\leftlogo` and `\rightlogo` are suppressed | empty |
-| `\firstpagenote{...}` | Unnumbered footnote on page 1 | empty |
+| `\firstpagenote{...}` | Unnumbered footnote on page 1 (small gray); in `rigorous` style it opens the footnote line that also carries Date/Contact/`\metadata` | empty |
 
 `\maketitle` also writes `\title` and `\author` into the PDF Title and Author
 fields (line breaks, `\and`, `\textsuperscript` marks and `\thanks` are
@@ -150,22 +151,25 @@ In the body:
 **Colours** you can reuse in TikZ or pgfplots: `ipAccent`, `ipPanel`,
 `ipRule` and `ipLink` (palette-dependent; `ipLink` is the hyperlink colour,
 steel blue in `slate` and equal to the accent otherwise), the neutrals
-`ipInk`, `ipGray`, `ipFaint`, and the generated callout set `ipTakeaway`,
+`ipInk`, `ipGray`, `ipFaint`, the abstract box pair `ipAbstractBlue` /
+`ipAbstractBorder`, and the generated callout set `ipTakeaway`,
 `ipDiscussion`, `ipGuidance`, `ipObservation` (each with a `...Tint`
 companion), `ipOurs` and `ipFindingTint`.
 
 **Plots.** If the document loads `pgfplots`, two presets carry the page's
 fonts and colours: `\begin{axis}[inkpaper, ...]` for line plots (accent, then
-faint dashed, then two lighter accent series) and `\begin{axis}[inkpaper
+faint dashed, then a lighter accent dotted and a lighter gray dash-dot series) and `\begin{axis}[inkpaper
 bars, ...]` for `ybar` charts on the light-to-accent ramp with a top legend
 (add `nodes near coords` to a series for accent value labels). Both default
 to `width=\linewidth, height=\figureheight`. Nothing is loaded or defined
-unless the document loads `pgfplots`; `main.tex` uses the `inkpaper` preset
-for its ablation figure.
+unless the document loads `pgfplots`; `main.tex` uses `inkpaper bars` for its
+teaser and the `inkpaper` preset for its ablation figure.
 
-**Spacing and floats.** The class sets `\frenchspacing` (a single space after
-sentence-ending punctuation); put `\nonfrenchspacing` in the preamble to
-restore the double space. The float parameters let a page be mostly float
+**Type and spacing.** Body text is Times (`newtxtext`/`newtxmath`) at 10pt
+with `\linespread{1.03}`, a 1.1em paragraph indent and a 0.12em `\parskip`,
+on 1.05in side margins; headings are Source Sans. The class sets
+`\frenchspacing` (a single space after sentence-ending punctuation); put
+`\nonfrenchspacing` in the preamble to restore the double space. The float parameters let a page be mostly float
 before LaTeX pushes a float to the next page (`\topfraction` 0.85,
 `\floatpagefraction` 0.75); the vertical spacing around floats is `article`'s.
 
@@ -183,10 +187,11 @@ See `main.tex` for a complete example using most of the above.
 `geometry`, `hyperref`, `natbib` (unless `nonatbib`), `enumitem`,
 `xcolor[table]`, `caption`, `threeparttable`, `tcolorbox[most]` (which brings
 TikZ and `listings`), `microtype`, `amsmath`, `amssymb`, `amsthm`,
-`newpxtext`/`newpxmath`, `sourcesanspro`, `zi4`, `fontawesome5`, `titlesec`,
+`newtxtext`/`newtxmath`, `sourcesanspro`, `zi4`, `fontawesome5`, `titlesec`,
 `titletoc`, `fancyhdr`, `booktabs`, `graphicx`, `url`, `etoolbox`,
 `kvoptions` and `iftex` are loaded by the class. `amssymb` and `amsthm` are
-loaded before `newpxmath` on purpose; a later `\usepackage{amsthm}` is
+loaded before `newtxmath` on purpose (loading them afterwards fails with
+`\Bbbk already defined`); a later `\usepackage{amssymb,amsthm}` is
 harmless. Do **not** `\usepackage` any of these again *with options* (you
 will get *Option clash for package ...*). Instead:
 
@@ -221,22 +226,25 @@ ways:
   accent generated with the callout colours, instead of `ipPanel`. Write the
   table preamble without `@{}` at the outer edges (`lcccc`, not
   `@{}lcccc@{}`) so the tint ends exactly on the booktabs rules.
-- `\code`, `\model`, `\data` and `\project` render as a small accent icon
-  plus a regular-weight word, separated by middle dots instead of `\qquad`
-  gaps. `\linkitem{}{Word}{url}` with an empty first argument gives a word
-  without an icon.
+- `\code`, `\model`, `\data` and `\project` render as bold black sans words
+  separated by `\quad` (no icon); `\linkitem`'s icon argument is accepted
+  and not printed. An empty URL prints nothing.
 - `promptbox` has a square 0.45pt frame and a white title row with a gray
   caps title (it had a rounded 0.6pt frame and a tinted title row with a bold
   accent title). `promptbox*` is new.
-- The `Date`/`Contact`/`\metadata` labels are set in the gray tracked-caps
-  label voice instead of bold accent sans; a label wider than the column is
-  no longer overprinted by its value; `\date{}`, `\correspondence{}` and
-  `\papertag{}` print nothing instead of an empty row or line.
+- The `Date`/`Contact`/`\metadata` labels are bold black sans at text size
+  instead of bold accent `\footnotesize`; in `rigorous` style the entries
+  move from the title block into the first-page footnote, after
+  `\firstpagenote`. A label wider than the column is no longer overprinted by
+  its value; `\date{}`, `\correspondence{}` and `\papertag{}` print nothing
+  instead of an empty row or line.
 - The first-page header is 32pt high instead of 26pt (a two-line logo no
   longer triggers the fancyhdr `headheight` warning). The text area is
-  unchanged, so the logos and the first-page rule sit 6pt higher; that rule
-  is 0.5pt instead of 0.8pt. The running head is set in `ipGray` instead of
-  `ipFaint` and falls back to `\title` when `\shorttitle` is not given.
+  unchanged, so the logos and the first-page rule sit about 5pt higher (the
+  old header overflowed its 26pt box into the gap above the text); that rule
+  is black instead of the accent colour, and the `rigorous` first page always
+  shows it. The running head is set in `ipGray` instead of `ipFaint` and
+  falls back to `\title` when `\shorttitle` is not given.
 - `\begin{abstract}...\end{abstract}` works (it used to lose the first
   character of the text), `\thanks{...}` inside `\author` prints its note (it
   was dropped), and `\author{A \and B}` no longer fails. The open abstract box
@@ -257,9 +265,14 @@ ways:
   are flush with the margin and the items indented by a two-digit label;
   relaxed float parameters; `\sidefigure` takes an optional `<placement>`;
   hyperlinks use `ipLink` (steel blue in `slate`, the accent elsewhere as
-  before). The measure, `\parskip`, `\parindent` and the type scale are
-  unchanged, but the line breaks and pagination of an existing document can
-  shift.
+  before).
+- Page design (from the upstream `rigorous` branch): Times (`newtx`) instead
+  of Palatino (`newpx`), 1.05in instead of 1.2in side margins,
+  `\linespread{1.03}` instead of 1.06, a 1.1em paragraph indent with a 0.12em
+  `\parskip` instead of block paragraphs, tighter heading spacing, a slightly
+  darker ink (`#14171C`), and `titlealign=center` as the default (pass
+  `titlealign=left` to keep a left-aligned title block). Line breaks and
+  pagination of an existing document will shift.
 
 ### From the first `rigorous` branch
 
@@ -272,14 +285,17 @@ ways:
   frame, a 10pt inset and a caps label on the bar; a box that breaks across
   pages repeats its bar with "(continued)"; `\cref` works.
 - `\oursrow` shades the row again (it was a no-op).
-- `\code`, `\model`, `\data` and `\project` show their icon again, with a
-  regular-weight word in ink (the branch set a bold accent word, no icon).
-- Rigorous title page: the tag, the metadata keys and the `Abstract` heading
-  share the gray tracked-caps label voice; the authors are regular weight;
-  the hairline above the abstract is gone and the closing hairline is drawn
-  even without an abstract; `promptbox` has a gray caps title.
+- `\code`, `\model`, `\data` and `\project` are bold black sans words
+  separated by `\quad` (the branch set bold accent words).
+- Rigorous title page: no tag line above the title (the tag stays in the
+  running head); title 19/23 bold serif, authors bold at text size,
+  affiliations and author notes on one line; the abstract sits in a light
+  blue box (`ipAbstractBlue`, 0.4pt `ipAbstractBorder` frame) instead of
+  between two hairlines; Date/Contact/`\metadata` move into the first-page
+  footnote; the header rule is black 0.8pt and always drawn. `promptbox` has
+  a gray caps title.
 - Everything in the previous list from the `\metadata` labels onward also
-  applies.
+  applies, including the page-design item.
 
 ## Components
 
@@ -336,8 +352,8 @@ further characters to the `literate` list in `inkpaper.cls` if needed.
 ### The callout family
 
 Every callout shares one grammar: square corners, 0.45pt rules, a 10pt
-inset, `\small` body text and one label voice (sans tracked caps, the same
-voice as the PREPRINT tag and the running head). What the colour code means:
+inset, `\small` body text and one label voice (sans bold tracked caps). What
+the colour code means:
 
 | Box | Colour | Use it for |
 | --- | --- | --- |
@@ -379,23 +395,23 @@ Usage guidance:
 
 ### Logos
 
-`\leftlogo` and `\rightlogo` sit in a 32pt header. The quickest way to fill
-it is the built-in placeholder helper, as `main.tex` does:
+`\leftlogo` and `\rightlogo` sit in a 32pt header. `main.tex` fills it with
+two text marks, which need no files:
+
+```latex
+\leftlogo{{\sffamily\bfseries\small\color{ipAccent}University Name}}
+\rightlogo{\begin{tabular}{r}
+  \sffamily\bfseries\scriptsize Research Lab\\[-1pt]
+  \sffamily\scriptsize\color{ipGray}Institute Name
+\end{tabular}}
+```
+
+Real logos are `\leftlogo{\includegraphics[height=16pt]{logo/university.pdf}}`;
+the built-in badge helper draws a 16pt mark next to one or two lines of text:
 
 ```latex
 \leftlogo{\placeholderlogo{U}{University Name}}
 \rightlogo{\placeholderlogo[outline]{L}{Research Lab\\Institute Name}}
-% Real logos: \leftlogo{\includegraphics[height=16pt]{logo/university.pdf}}
-```
-
-A hand-made two-line text logo should set its font size outside the
-`tabular` and align on the bottom line:
-
-```latex
-\rightlogo{{\sffamily\scriptsize\begin{tabular}[b]{@{}r@{}}
-  \bfseries Research Lab\\[-1pt]
-  \color{ipGray}Institute Name
-\end{tabular}}}
 ```
 
 See `main.tex` for institutional headers, formal captions, tables, and
@@ -420,12 +436,13 @@ TeX Live install, these collections cover every package the class loads:
 | `collection-latex` | `kvoptions`, `etoolbox`, `geometry`, `graphicx`, `colortbl`, `fancyhdr`, `natbib`, `url`, `hyperref`, `amsmath`, `amsthm` (`amscls`) |
 | `collection-latexrecommended` | `microtype`, `xcolor`, `booktabs`, `caption`, `listings`, `xkeyval` |
 | `collection-latexextra` | `tcolorbox` (with `environ`, `trimspaces`), `threeparttable`, `titlesec`, `titletoc`, `enumitem`, `fontaxes`, `upquote`, `xstring`, `xpatch` |
-| `collection-fontsextra` | `newpx` (text and math), `newtx` (symbol fonts used by `newpxmath`), `sourcesanspro`, `inconsolata` (`zi4`), `fontawesome5`, `mweights` |
+| `collection-fontsrecommended` | `tex-gyre` (Termes, used by `newtxtext`) |
+| `collection-fontsextra` | `newtx` (text and math), `sourcesanspro`, `inconsolata` (`zi4`), `fontawesome5`, `mweights` |
 | `collection-pictures` | `pgf`/TikZ and `tikzfill` (via `tcolorbox`); the example additionally uses `pgfplots` |
 
 ```bash
 tlmgr install collection-latexrecommended collection-latexextra \
-              collection-fontsextra collection-pictures
+              collection-fontsrecommended collection-fontsextra collection-pictures
 ```
 
 The repository's `.latexmkrc` selects pdfLaTeX with `-halt-on-error` and
@@ -433,10 +450,11 @@ The repository's `.latexmkrc` selects pdfLaTeX with `-halt-on-error` and
 scratch files. Overleaf honours the same file if you copy it to `latexmkrc`
 (no dot) in the project root; the compiler must be set to pdfLaTeX.
 
-Tagged PDF (`\DocumentMetadata{tagging=on}`) is experimental. With TeX Live
-2026 the example compiles without tagpdf structure warnings (the appendix
-mini-TOC is emitted as an artifact), but the template has not been validated
-against a PDF/UA checker.
+Tagged PDF (`\DocumentMetadata{tagging=on}`) is experimental. The appendix
+mini-TOC is emitted as an artifact, but with TeX Live 2026 `promptbox*` (a
+`listings` box) stops the tagged build with a tagpdf begin/end mismatch error,
+and the example without it still logs a few marked-content warnings; the
+template has not been validated against a PDF/UA checker.
 
 `semantic_palette.py` needs only Python 3 (Pillow for the optional `--swatch`
 PNG). `make preview` needs `pdftoppm` from poppler.

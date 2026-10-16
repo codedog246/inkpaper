@@ -1,0 +1,51 @@
+# Rebuilds the example with a full TeX Live image, fails if the committed
+# showcase PDF no longer matches the sources (as a warning, since CI's TeX
+# Live may break lines differently), runs the colour gates and uploads
+# main.pdf as an artifact.
+name: build
+
+on:
+  push:
+    branches: [main, rigorous]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Keep the committed PDF for the freshness check
+        run: |
+          if [ -f main.pdf ]; then cp main.pdf committed.pdf; fi
+
+      # Engine and options (pdflatex, -halt-on-error) come from .latexmkrc.
+      - name: Compile main.tex (latexmk, full TeX Live image)
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+
+      # Compares the extracted text (with layout) of the committed PDF with
+      # the freshly built one. The check assumes the CI TeX Live reproduces
+      # the author's line breaks; if it does not, rebuild locally and commit.
+      - name: Warn if the committed main.pdf is stale
+        continue-on-error: true
+        run: |
+          if [ ! -f committed.pdf ]; then
+            echo 'No committed main.pdf; skipping the freshness check.'
+            exit 0
+          fi
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+          diff <(pdftotext -layout committed.pdf -) <(pdftotext -layout main.pdf -) \
+            || { echo '::warning::main.pdf text differs from a fresh CI build; run make and make preview locally, then commit main.pdf and preview.png'; exit 1; }
+
+      - name: Colour gates (semantic_palette.py exits 1 if a gate fails)
+        run: python3 semantic_palette.py
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: main.pdf
+          path: main.pdf
+          if-no-files-found: ignore

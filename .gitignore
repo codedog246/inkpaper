@@ -1,11 +1,13 @@
-build/
-
+# Builds run in place (see Makefile). main.pdf and preview.png are committed
+# on purpose as the showcase output; regenerate them with `make` and
+# `make preview` before committing changes to main.tex or inkpaper.cls.
 *.aux
 *.bbl
 *.bcf
 *.blg
 *.fdb_latexmk
 *.fls
+*.listing
 *.lof
 *.log
 *.lot
@@ -14,5 +16,9 @@ build/
 *.run.xml
 *.synctex.gz
 *.toc
+
+# Build products that are regenerated, not committed
+spec-*.pdf
+*-arxiv.tar.gz
 
 .DS_Store

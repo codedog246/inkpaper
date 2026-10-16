@@ -1,51 +1,101 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{inkpaper}[2026/10/15 Neutral single-column preprint class]
+\ProvidesClass{inkpaper}[2026/10/16 v0.1.0 Neutral single-column preprint class]
+
+% ---------------------------------------------------------------- engine guard
+\RequirePackage{iftex}
+\ifpdftex\else
+  \ClassError{inkpaper}{inkpaper requires pdflatex}
+    {This class loads Type 1 fonts (newpx, sourcesanspro, zi4) via fontenc/inputenc,\MessageBreak
+     which do not work under xelatex/lualatex (no TU encoding for zi4).\MessageBreak
+     Compile with: latexmk -pdf main.tex}%
+  \expandafter\@@end
+\fi
 
 \RequirePackage{kvoptions}
+\RequirePackage{etoolbox}
 \SetupKeyvalOptions{family=IP,prefix=IP@}
 \DeclareStringOption[navy]{palette}      % navy | teal | slate
 \DeclareStringOption[left]{titlealign}   % left | center
 \DeclareStringOption[rigorous]{titlestyle} % rigorous | open | panel
+\DeclareBoolOption{numbers}              % numeric citations instead of author-year
+\DeclareBoolOption{nonatbib}             % skip natbib so biblatex can be used
+\DeclareVoidOption{twocolumn}{\ClassError{inkpaper}{twocolumn is not supported}{inkpaper is a single-column class.}}
 \DeclareDefaultOption{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessKeyvalOptions*
 \LoadClass[10pt]{article}
+% Base body size (10 / 10.95 / 12pt per article's size option); every
+% hard-coded \fontsize below is expressed as a multiple of it so that
+% \documentclass[11pt] / [12pt] keep the heading hierarchy intact.
+\newlength{\IP@base}
+\ifcase\@ptsize\relax
+  \setlength{\IP@base}{10pt}\or
+  \setlength{\IP@base}{10.95pt}\or
+  \setlength{\IP@base}{12pt}\fi
+% \IP@fontsize{<size factor>}{<baselineskip factor>}
+\newcommand{\IP@fontsize}[2]{\fontsize{#1\IP@base}{#2\IP@base}\selectfont}
 
 % ---------------------------------------------------------------- layout
-\RequirePackage[letterpaper,top=1.05in,bottom=1.0in,left=1.2in,right=1.2in,
+% headheight 32pt: room for a 16pt logo badge with two lines of text in the
+% first-page header without fancyhdr's headheight warning.
+\RequirePackage[top=1.05in,bottom=1.0in,left=1.2in,right=1.2in,
   headheight=32pt,headsep=0.25in,footskip=0.45in]{geometry}
 \linespread{1.06}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.55em plus 0.1em}
+% Single inter-sentence space; \nonfrenchspacing in the preamble restores
+% TeX's wider sentence space.
+\frenchspacing
+% Float policy: let a page be mostly float before it is pushed.
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{4}
 
 % ---------------------------------------------------------------- fonts
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
 \RequirePackage{amsmath}
+\RequirePackage{amssymb}   % must precede newpxmath (newpx docs)
+\RequirePackage{amsthm}    % must precede newpxmath (\openbox clash)
 \RequirePackage{newpxtext}
 \RequirePackage{newpxmath}
 \RequirePackage[scale=0.95]{sourcesanspro}
 \RequirePackage[varqu,scaled=0.95]{zi4}
-\RequirePackage[protrusion=true,expansion=true,tracking=true]{microtype}
+% Font expansion is enabled automatically in PDF mode; an explicit
+% expansion=true is a hard error under latex/dvips.
+\RequirePackage[protrusion=true,tracking=true]{microtype}
 
 % ---------------------------------------------------------------- colors
 \RequirePackage[table]{xcolor}
 \definecolor{ipInk}{HTML}{1B1F27}
 \definecolor{ipGray}{HTML}{5F6672}
 \definecolor{ipFaint}{HTML}{8A919C}
-\RequirePackage{etoolbox}
 \ifdefstring{\IP@palette}{teal}{%
   \definecolor{ipAccent}{HTML}{1D5C63}%
+  \colorlet{ipLink}{ipAccent}%
   \definecolor{ipPanel}{HTML}{EEF4F4}%
   \definecolor{ipRule}{HTML}{C5D8DA}%
 }{\ifdefstring{\IP@palette}{slate}{%
   \definecolor{ipAccent}{HTML}{3A4556}%
+  \definecolor{ipLink}{HTML}{2F5F8F}%  % slate accent is near-gray; links need their own ink
   \definecolor{ipPanel}{HTML}{F3F4F6}%
   \definecolor{ipRule}{HTML}{D3D7DD}%
 }{%
   \definecolor{ipAccent}{HTML}{1F3B60}%
+  \colorlet{ipLink}{ipAccent}%
   \definecolor{ipPanel}{HTML}{EFF2F7}%
   \definecolor{ipRule}{HTML}{C9D2DF}%
 }}
+% Option validation: a typo must stop with a class error, not silently fall
+% back to navy / rigorous / left.
+\ifboolexpr{test{\ifdefstring{\IP@palette}{navy}} or test{\ifdefstring{\IP@palette}{teal}} or test{\ifdefstring{\IP@palette}{slate}}}{}{%
+  \ClassError{inkpaper}{Unknown palette '\IP@palette'}{Use palette=navy, teal, or slate.}}
+\ifboolexpr{test{\ifdefstring{\IP@titlestyle}{rigorous}} or test{\ifdefstring{\IP@titlestyle}{open}} or test{\ifdefstring{\IP@titlestyle}{panel}}}{}{%
+  \ClassError{inkpaper}{Unknown titlestyle '\IP@titlestyle'}{Use titlestyle=rigorous, open, or panel.}}
+\ifboolexpr{test{\ifdefstring{\IP@titlealign}{left}} or test{\ifdefstring{\IP@titlealign}{center}}}{}{%
+  \ClassError{inkpaper}{Unknown titlealign '\IP@titlealign'}{Use titlealign=left or center.}}
 % Semantic callout colours.  Generated per palette by semantic_palette.py
 % (OKLCH) so the four coloured callouts follow the palette accent instead of
 % four unrelated hard-coded hues: Takeaway = accent hue, Discussion = accent
@@ -97,7 +147,7 @@
   \definecolor{ipObservationTint}{HTML}{F5F7F9}%
   \definecolor{ipOurs}{HTML}{EBF2FD}%
   \definecolor{ipFindingTint}{HTML}{F3F7FE}}
-\ifcsdef{IP@sem@\IP@palette}{\csuse{IP@sem@\IP@palette}}{\csuse{IP@sem@navy}}
+\csuse{IP@sem@\IP@palette}  % value validated above
 \color{ipInk}
 
 % ---------------------------------------------------------------- packages
@@ -109,11 +159,29 @@
 \RequirePackage{fontawesome5}
 \RequirePackage[most]{tcolorbox}
 \RequirePackage{fancyhdr}
-\RequirePackage[round]{natbib}
+\ifIP@nonatbib\else
+  \ifIP@numbers
+    \RequirePackage[numbers,sort&compress]{natbib}
+  \else
+    \RequirePackage[round]{natbib}
+  \fi
+  % References in \small with a 0.35em entry gap (subordinate to the body,
+  % as in NeurIPS/ICML styles); skipped under [nonatbib] where biblatex
+  % defines neither macro.
+  \renewcommand{\bibfont}{\small}
+  \setlength{\bibsep}{0.35em plus 0.1em}
+  % Give the unnumbered References heading a TOC entry and a PDF bookmark.
+  % \phantomsection sits inside the title so the anchor is on the heading
+  % itself (titlesec's starred headings create no hyperref anchor).
+  \renewcommand{\bibsection}{\section*{\phantomsection\refname}%
+    \addcontentsline{toc}{section}{\refname}}
+\fi
 \RequirePackage[hyphens]{url}
 \RequirePackage{hyperref}
-\hypersetup{colorlinks=true,linkcolor=ipAccent,citecolor=ipAccent,
-  urlcolor=ipAccent,pdfborder={0 0 0}}
+% Hyperlink ink is ipLink (= ipAccent in navy/teal; a steel blue in slate, whose
+% accent is too close to body ink for links to be recognisable).
+\hypersetup{colorlinks=true,linkcolor=ipLink,citecolor=ipLink,
+  urlcolor=ipLink,pdfborder={0 0 0}}
 
 % ---------------------------------------------------------------- label voice
 % One label voice for the document: sans tracked caps.  On the title page
@@ -124,21 +192,38 @@
 \newcommand{\IP@boxlabel}{\sffamily\bfseries\footnotesize}
 \newcommand{\IP@boxcaps}[1]{\textls[110]{\MakeUppercase{#1}}}
 
-\setlist{leftmargin=1.4em,itemsep=0.15em,topsep=0.3em}
+\setlist{itemsep=0.15em,topsep=0.3em}
+\setlist[itemize]{leftmargin=1.4em}
+\setlist[enumerate]{leftmargin=*,labelindent=0pt,widest=10}
+\setlist[description]{leftmargin=1.4em}
 \renewcommand{\arraystretch}{1.12}
 
 % ---------------------------------------------------------------- headings
 \titleformat{\section}
-  {\sffamily\bfseries\fontsize{12.5}{15}\selectfont\color{ipInk}}
+  {\sffamily\bfseries\IP@fontsize{1.25}{1.5}\color{ipInk}}
   {\color{ipAccent}\thesection}{0.75em}{}
 \titleformat{\subsection}
-  {\sffamily\bfseries\fontsize{10.5}{13}\selectfont\color{ipInk}}
+  {\sffamily\bfseries\IP@fontsize{1.05}{1.3}\color{ipInk}}
   {\color{ipAccent}\thesubsection}{0.75em}{}
 \titleformat{\subsubsection}
   {\sffamily\bfseries\small\color{ipInk}}
   {\color{ipAccent}\thesubsubsection}{0.75em}{}
+% Run-in heads get a trailing period automatically, unless the title already
+% ends in terminal punctuation (so \paragraph{Title.} does not render "Title..").
+\ExplSyntaxOn
+\NewDocumentCommand \IP@runintitle { m }
+  {
+    #1
+    \tl_if_empty:nF {#1}
+      {
+        \exp_args:Ne \str_case:nnF { \tl_item:nn {#1} {-1} }
+          { {.}{} {:}{} {?}{} {!}{} }
+          { . }
+      }
+  }
+\ExplSyntaxOff
 \titleformat{\paragraph}[runin]
-  {\sffamily\bfseries\small\color{ipInk}}{}{0pt}{}[.]
+  {\sffamily\bfseries\small\color{ipInk}}{}{0pt}{\IP@runintitle}
 \titlespacing*{\section}{0pt}{1.9em plus .4em}{0.7em}
 \titlespacing*{\subsection}{0pt}{1.3em plus .3em}{0.45em}
 \titlespacing*{\subsubsection}{0pt}{1.0em}{0.3em}
@@ -146,25 +231,41 @@
 
 % ---------------------------------------------------------------- captions
 \RequirePackage{caption}
+\RequirePackage{threeparttable}  % \begin{threeparttable} makes a caption as wide as its tabular
 \DeclareCaptionFont{ipaccent}{\color{ipAccent}}
 \DeclareCaptionFont{ipgray}{\color{ipGray}}
 \captionsetup{font={small,ipgray},labelfont={sf,bf,ipaccent},
   labelsep=quad,justification=justified,singlelinecheck=false,skip=6pt}
-\captionsetup[table]{position=top}
+% Table captions sit above a centred tabular: a one-line caption is centred
+% over it; wrap the table in threeparttable to set a long caption to the
+% tabular's width.
+\captionsetup[table]{position=top,singlelinecheck=true}
 % Bold lead-in sentence for captions: \caption{\captitle{Main result.} Details.}
 \newcommand{\captitle}[1]{{\color{ipInk}\bfseries #1}}
 
-% Caption beside the figure: \sidefigure[ratio]{content}{caption + label}
-\newcommand{\sidefigure}[3][0.64]{%
-  \begin{figure}[t]%
-    \begin{minipage}[c]{#1\linewidth}\centering #2\end{minipage}\hfill
+% Caption beside the figure: \sidefigure[ratio]<placement>{content}{caption + label}
+%   ratio     = fraction of \linewidth for the content (default 0.64)
+%   placement = float specifier as for figure, e.g. <h>, <b>, <htbp> (default t);
+%               a bare specifier in the bracket slot, \sidefigure[h]{..}{..},
+%               is accepted as well (it cannot be mistaken for a ratio)
+\ExplSyntaxOn
+\cs_new:Npn \IP@ifplacement #1 { \regex_match:nnTF { \A [htbpH!]+ \Z } {#1} }
+\ExplSyntaxOff
+\NewDocumentCommand{\sidefigure}{O{0.64} D<>{t} m m}{%
+  \IP@ifplacement{#1}{\IP@sidefigure{0.64}{#1}{#3}{#4}}{\IP@sidefigure{#1}{#2}{#3}{#4}}}
+\newcommand{\IP@sidefigure}[4]{%
+  \begin{figure}[#2]%
+    \begin{minipage}[c]{#1\linewidth}\centering #3\end{minipage}\hfill
     \begin{minipage}[c]{\dimexpr\linewidth-#1\linewidth-1.6em\relax}%
-      \captionsetup{justification=raggedright,skip=0pt}#3%
+      \captionsetup{justification=raggedright,skip=0pt}#4%
     \end{minipage}%
   \end{figure}}
 
 % ---------------------------------------------------------------- footnotes
-\renewcommand{\footnoterule}{{\color{ipRule}\hrule width 0.3\textwidth height 0.4pt}\vspace{4pt}}
+% Net height must be zero (as in the kernel default), or full pages with a
+% footnote become overfull by 4.4pt.
+\renewcommand{\footnoterule}{\kern-4.4pt{\color{ipRule}\hrule width 0.3\textwidth height 0.4pt}\kern 4pt}
+\setlength{\skip\footins}{13.4pt plus 4pt minus 2pt}  % keeps the previous visual gap (9pt + rule + 4pt) while being correctly accounted
 
 % ---------------------------------------------------------------- tables
 % Highlight the row of your own method: \oursrow Ours & ... \\
@@ -191,17 +292,34 @@
 \newcommand{\shorttitle}[1]{\renewcommand{\IP@short}{#1}}
 \newcommand{\affiliations}[1]{\renewcommand{\IP@affil}{#1}}
 \newcommand{\authornotes}[1]{\renewcommand{\IP@notes}{#1}}
-\renewcommand{\abstract}[1]{\renewcommand{\IP@abstract}{#1}}
+% \abstract{...} (preamble command) and \begin{abstract}...\end{abstract}
+% (environment, before or after \maketitle) both work.  Used after
+% \maketitle the environment typesets the abstract in place (rigorous and
+% panel styles use the rigorous block there, since the title block has
+% already been shipped).
+\newif\ifIP@titledone
+\newcommand{\IP@abstractcmd}[1]{\long\gdef\IP@abstract{#1}}
+\NewDocumentEnvironment{IP@abstractenv}{+b}{%
+  \IP@abstractcmd{#1}\ifIP@titledone\IP@abstractbox\fi}{}
+\renewcommand{\abstract}{%
+  \ifdefstring{\@currenvir}{abstract}{\IP@abstractenv}{\IP@abstractcmd}}
+\let\endabstract\endIP@abstractenv
 \newcommand{\leftlogo}[1]{\renewcommand{\IP@leftlogo}{#1}}
 \newcommand{\rightlogo}[1]{\renewcommand{\IP@rightlogo}{#1}}
 \newcommand{\panellogo}[1]{\renewcommand{\IP@panellogo}{#1}}
 \newcommand{\firstpagenote}[1]{\renewcommand{\IP@firstnote}{#1}}
-\newcommand{\metadata}[2]{%
+% \metadata{<label>}{<value>}: an empty value prints nothing (so \date{} and
+% \correspondence{} are no-ops); a label wider than the 6.2em column is set at
+% its natural width + 0.8em instead of being overprinted by the value.
+\newcommand{\metadata}[2]{\ifblank{#2}{}{%
   \g@addto@macro\IP@meta{%
-    \makebox[6.2em][l]{\IP@label{#1}}%
+    \sbox\@tempboxa{\IP@label{#1}}%
+    \ifdim\wd\@tempboxa>\dimexpr6.2em-0.8em\relax
+      \usebox\@tempboxa\hspace{0.8em}%
+    \else\makebox[6.2em][l]{\usebox\@tempboxa}\fi
     {\small #2}\par}%
   \g@addto@macro\IP@metainline{%
-    \mbox{\IP@label{#1}\enspace{\small #2}}\qquad}}
+    \mbox{\IP@label{#1}\enspace{\small #2}}\qquad}}}
 \renewcommand{\date}[1]{\metadata{Date}{#1}}
 \newcommand{\correspondence}[1]{\metadata{Contact}{#1}}
 % \linkitem{<icon>}{<word>}{<url>}: a small accent icon (FontAwesome; may be
@@ -219,43 +337,69 @@
 \newcommand{\data}[1]{\linkitem{\faDatabase}{Data}{#1}}
 \newcommand{\model}[1]{\linkitem{\faCube}{Model}{#1}}
 
+% Placeholder logos that need no image files and no extra packages:
+%   \leftlogo{\placeholderlogo{U}{University Name}}
+%   \rightlogo{\placeholderlogo[outline]{L}{Research Lab\\Institute Name}}
+% Replace with \includegraphics[height=16pt]{logo/university.pdf} for real use.
+% The 0.3333em on both sides of the text reproduces the inner sep of the TikZ
+% text node this helper replaced, so documents that used it render unchanged.
+\tikzset{ip logo fill/.style={fill=ipAccent,text=white},
+  ip logo outline/.style={draw=ipAccent,line width=0.8pt,text=ipAccent}}
+\newcommand{\placeholderlogo}[3][fill]{%
+  \mbox{\tikz[baseline=-0.6ex]{\node[ip logo #1,font=\sffamily\bfseries\small,
+      minimum size=16pt,inner sep=0pt,rounded corners=2pt]{#2};}%
+    \hspace{3pt}\hspace{0.3333em}%
+    {\ifstrequal{#1}{outline}{\sffamily\scriptsize\color{ipGray}}%
+        {\sffamily\bfseries\footnotesize\color{ipInk}}%
+      \begin{tabular}[c]{@{}l@{}}#3\end{tabular}}\hspace{0.3333em}}}
+
 \ifdefstring{\IP@titlealign}{center}
   {\newcommand{\IP@align}{\centering}}
   {\newcommand{\IP@align}{\raggedright}}
 
 % ---------------------------------------------------------------- header
+% Running head: short title (or the title, with its line breaks flattened)
+% left, the tag right; page number centred in the footer on every page.
+\newcommand{\IP@pagenumber}{\sffamily\footnotesize\color{ipGray}\thepage}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\sffamily\scriptsize\color{ipFaint}\IP@short}
-\fancyhead[R]{\sffamily\scriptsize\color{ipFaint}\MakeUppercase{\IP@tag}}
-\fancyfoot[C]{\sffamily\footnotesize\color{ipGray}\thepage}
+\fancyhead[L]{\sffamily\scriptsize\color{ipGray}%
+  \ifdefempty{\IP@short}{\let\\\space\@title}{\IP@short}}
+\fancyhead[R]{\sffamily\scriptsize\color{ipGray}\MakeUppercase{\IP@tag}}
+\fancyfoot[C]{\IP@pagenumber}
 \renewcommand{\headrule}{{\color{ipRule}\hrule height 0.4pt}}
 \fancypagestyle{plain}{\fancyhf{}%
-  \fancyfoot[C]{\sffamily\footnotesize\color{ipGray}\thepage}%
+  \fancyfoot[C]{\IP@pagenumber}%
   \renewcommand{\headrule}{}}
 \fancypagestyle{ipfirst}{\fancyhf{}%
   \fancyhead[L]{\IP@leftlogo}%
   \fancyhead[R]{\IP@rightlogo}%
-  \fancyfoot[C]{\sffamily\footnotesize\color{ipGray}\thepage}%
+  \fancyfoot[C]{\IP@pagenumber}%
   \renewcommand{\headrule}{\vspace{4pt}{\color{ipAccent}\hrule height 0.5pt}}}
 
 % ---------------------------------------------------------------- title block
+% \papertag{} suppresses the tag line and its gap; \and inside \author is a
+% \quad separator (scoped to the author group, so it keeps its kernel meaning
+% elsewhere).
 \newcommand{\IP@heading}{%
+  \ifx\IP@tag\@empty\else
   {\sffamily\bfseries\scriptsize\color{ipAccent}%
-    \textls[180]{\MakeUppercase{\IP@tag}}\par}\vspace{0.7em}
-  {\sffamily\bfseries\fontsize{21}{26}\selectfont\color{ipInk}\@title\par}%
+    \textls[180]{\MakeUppercase{\IP@tag}}\par}\vspace{0.7em}\fi
+  {\sffamily\bfseries\IP@fontsize{2.1}{2.6}\color{ipInk}\@title\par}%
   \vspace{1.0em}
-  {\sffamily\fontsize{10.5}{14}\selectfont\color{ipInk}\@author\par}%
+  {\sffamily\IP@fontsize{1.05}{1.4}\color{ipInk}%
+    \renewcommand{\and}{\unskip\quad}\@author\par}%
   \ifx\IP@affil\@empty\else
     \vspace{0.45em}{\small\color{ipGray}\IP@affil\par}\fi
   \ifx\IP@notes\@empty\else
     \vspace{0.2em}{\footnotesize\color{ipGray}\IP@notes\par}\fi}
 
 \newcommand{\IP@rigorousheading}{%
-  {\IP@label{\IP@tag}\par}\vspace{0.8em}
-  {\bfseries\fontsize{22}{27}\selectfont\color{ipInk}\@title\par}%
+  \ifx\IP@tag\@empty\else{\IP@label{\IP@tag}\par}\vspace{0.8em}\fi
+  {\bfseries\IP@fontsize{2.2}{2.7}\color{ipInk}\@title\par}%
   \vspace{0.9em}
-  {\fontsize{10.5}{14}\selectfont\color{ipInk}\@author\par}%
+  {\IP@fontsize{1.05}{1.4}\color{ipInk}%
+    \renewcommand{\and}{\unskip\quad}\@author\par}%
   \ifx\IP@affil\@empty\else
     \vspace{0.4em}{\small\color{ipGray}\IP@affil\par}\fi
   \ifx\IP@notes\@empty\else
@@ -273,68 +417,133 @@
       {{\color{ipInk}\IP@meta}}%
   \fi}
 
+% Title footnotes.  They are emitted before the abstract (rigorous and open:
+% right after the heading; panel: the first-page note before the box, since a
+% footnote cannot be placed from inside it), so that a title block which fills
+% page 1 or breaks onto page 2 still puts its notes on page 1.  Order at the
+% foot of the page: \thanks texts, then the first-page note (panel: the note
+% first, the \thanks texts after the box).  Both macros are idempotent.
+\newif\ifIP@notesdone
+\newcommand{\IP@firstnotetext}{%
+  \ifIP@notesdone\else
+    \ifx\IP@firstnote\@empty\else
+      \begingroup\renewcommand{\thefootnote}{}%
+      \footnotetext{\color{ipGray}\IP@firstnote}\endgroup
+    \fi
+    \global\IP@notesdonetrue
+  \fi}
+\newcommand{\IP@titlenotes}{\@thanks\global\let\@thanks\@empty\IP@firstnotetext}
+
+% Abstract renderings.  Both are breakable, so a very long abstract (or a
+% long author list) continues on page 2 instead of leaving page 1 empty.
+\newcommand{\IP@openabstractbox}{%
+  \vspace{1.1em}%
+  \begin{tcolorbox}[enhanced,breakable,colback=ipPanel,boxrule=0pt,frame hidden,
+    arc=3pt,left=16pt,right=16pt,top=12pt,bottom=12pt,
+    borderline west={2pt}{0pt}{ipAccent}]
+    {\sffamily\bfseries\small\color{ipAccent}Abstract\par}\vspace{0.35em}
+    {\small\linespread{1.12}\selectfont\color{ipInk}\IP@abstract\par}
+  \end{tcolorbox}}
+% Rigorous: a plain paragraph block with the geometry of the former
+% \begin{center}\begin{minipage}{0.90\linewidth} (trivlist skips above and
+% below, \lineskip at the top, no \parskip inside, \sloppy), so the output is
+% unchanged but the block can break across pages.
+\newcommand{\IP@rigorousabstractbox}{%
+  \par\vspace{1.1em}%
+  \begingroup
+    \vskip\topsep\vskip\partopsep\vskip\parskip
+    \setlength{\leftskip}{0.05\linewidth}\setlength{\rightskip}{0.05\linewidth}%
+    \setlength{\parskip}{\z@}\setlength{\parindent}{\z@}\sloppy
+    \nointerlineskip\vskip\lineskip
+    {\IP@label{Abstract}\par}\nobreak\vspace{0.45em}
+    {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}
+    \vskip\topsep\vskip\partopsep
+  \endgroup
+  \vspace{0.5em}}
+% \begin{abstract} after \maketitle: typeset in place in the style's voice
+% (panel falls back to the rigorous block; its inline abstract cannot be added
+% once the panel has been shipped).
+\newcommand{\IP@abstractbox}{%
+  \ifdefstring{\IP@titlestyle}{open}{\IP@openabstractbox}{\IP@rigorousabstractbox}}
+
 \newcommand{\IP@openstyle}{%
   \begingroup\IP@align
     \IP@heading\IP@linksblock\IP@metablock
   \endgroup
-  \ifx\IP@abstract\@empty\else
-    \vspace{1.1em}%
-    \begin{tcolorbox}[enhanced,colback=ipPanel,boxrule=0pt,frame hidden,
-      arc=3pt,left=16pt,right=16pt,top=12pt,bottom=12pt,
-      borderline west={2pt}{0pt}{ipAccent}]
-      {\sffamily\bfseries\small\color{ipAccent}Abstract\par}\vspace{0.35em}
-      {\small\linespread{1.12}\selectfont\color{ipInk}\IP@abstract\par}
-    \end{tcolorbox}%
-  \fi}
+  \IP@titlenotes
+  \ifx\IP@abstract\@empty\else\IP@openabstractbox\fi}
 
 \newcommand{\IP@rigorousstyle}{%
   \begingroup\IP@align
     \IP@rigorousheading\IP@linksblock\IP@metablock
   \endgroup
+  \IP@titlenotes
   \ifx\IP@abstract\@empty
     \vspace{0.9em}%
   \else
-    \vspace{1.1em}%
-    \begin{center}
-      \begin{minipage}{0.90\linewidth}
-        {\IP@label{Abstract}\par}\nobreak\vspace{0.45em}
-        {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}
-      \end{minipage}
-    \end{center}
-    \vspace{0.5em}%
+    \IP@rigorousabstractbox
   \fi
   {\color{ipRule}\hrule height 0.45pt}}
 
 \newcommand{\IP@panelstyle}{%
-  \begin{tcolorbox}[enhanced,colback=ipPanel,boxrule=0pt,frame hidden,
+  \begin{tcolorbox}[enhanced,breakable,colback=ipPanel,boxrule=0pt,frame hidden,
     arc=6pt,left=22pt,right=22pt,top=20pt,bottom=18pt]
     \begingroup\IP@align
       \IP@heading
       \ifx\IP@abstract\@empty\else
         \vspace{1.0em}%
-        {\small\linespread{1.14}\selectfont\color{ipInk!82}\IP@abstract\par}%
+        {\small\linespread{1.14}\selectfont\color{ipInk!82}\raggedright\IP@abstract\par}%
       \fi
       \IP@linksblock
     \endgroup
-    \vspace{0.2em}%
-    \begin{minipage}[b]{0.68\linewidth}\raggedright\IP@metablock\end{minipage}%
-    \hfill
-    \begin{minipage}[b]{0.3\linewidth}\raggedleft\IP@panellogo\end{minipage}%
+    \ifx\IP@meta\@empty\ifx\IP@panellogo\@empty\else\IP@panelfoot\fi\else\IP@panelfoot\fi
   \end{tcolorbox}}
 
+% Footer row of the panel: metadata (left) + logo (right); centered stack in
+% titlealign=center.  Only emitted when there is something to show.
+\newcommand{\IP@panelfoot}{%
+  \vspace{0.2em}%
+  \ifdefstring{\IP@titlealign}{center}{%
+    \begingroup\centering\IP@metablock
+      \ifx\IP@panellogo\@empty\else\vspace{0.8em}\IP@panellogo\par\fi
+    \endgroup}{%
+    \begin{minipage}[b]{0.68\linewidth}\raggedright\IP@metablock\end{minipage}%
+    \hfill
+    \begin{minipage}[b]{0.3\linewidth}\raggedleft\IP@panellogo\end{minipage}}}
+
+% PDF Title/Author metadata from \title/\author.  The \let's are applied only
+% while converting these two strings (local copy of hyperref's pre-hook), so
+% section bookmarks are unaffected: \\ -> space, \quad/\and separators and
+% \textsuperscript{...}/\thanks{...} markers dropped.
+\newcommand{\IP@setpdfmeta}{%
+  \begingroup
+    \toks@\expandafter{\pdfstringdefPreHook
+      \let\\\space\let\quad\@empty\let\qquad\@empty\let\and\@empty
+      \let\textsuperscript\@gobble\let\thanks\@gobble}%
+    \edef\pdfstringdefPreHook{\the\toks@}%
+    \hypersetup{pdftitle={\@title},pdfauthor={\@author}}%
+  \endgroup}
+
 \renewcommand{\maketitle}{%
+  \IP@setpdfmeta
+  \begingroup
+  % \thanks marks as symbols; title footnotes unlinked, as hyperref itself
+  % does for article's \maketitle (its wrapper was lost by this \renewcommand)
+  \renewcommand{\thefootnote}{\@fnsymbol\c@footnote}%
+  \@ifundefined{H@@footnotemark}{}{\let\@footnotemark\H@@footnotemark}%
+  \@ifundefined{H@@footnotetext}{}{\let\@footnotetext\H@@footnotetext}%
   \ifdefstring{\IP@titlestyle}{panel}{\ifx\IP@panellogo\@empty\else
     \let\IP@leftlogo\@empty\let\IP@rightlogo\@empty\fi}{}%
   \ifx\IP@leftlogo\@empty\ifx\IP@rightlogo\@empty
     \thispagestyle{plain}\else\thispagestyle{ipfirst}\fi
   \else\thispagestyle{ipfirst}\fi
-  \ifdefstring{\IP@titlestyle}{panel}{\IP@panelstyle}{%
+  \ifdefstring{\IP@titlestyle}{panel}{\IP@firstnotetext\IP@panelstyle}{%
     \ifdefstring{\IP@titlestyle}{open}{\IP@openstyle}{\IP@rigorousstyle}}%
-  \ifx\IP@firstnote\@empty\else
-    \begingroup\renewcommand{\thefootnote}{}%
-    \footnotetext{\color{ipGray}\IP@firstnote}\endgroup
-  \fi
+  \IP@titlenotes
+  \endgroup
+  \setcounter{footnote}{0}%
   \vspace{0.6em}%
+  \global\IP@titledonetrue
 }
 
 % ---------------------------------------------------------------- boxes
@@ -383,9 +592,10 @@
 % Semantic boxes: solid title bar, white tracked-caps label, auto counter.
 % The zero-width strut fixes the bar height whatever the label's letters.
 \newcommand{\IP@boxstrut}{\vrule height 5.4pt depth 1.6pt width 0pt\relax}
-\tcbset{ipsemantic/.style={ipcallout,
-  lefttitle=\IP@boxinset,righttitle=\IP@boxinset,toptitle=3.2pt,bottomtitle=2.4pt,
-  coltitle=white,fonttitle=\IP@boxlabel\IP@boxstrut,titlerule=0pt}}
+% Title row geometry shared by the semantic boxes and promptbox: 12-13pt bar.
+\tcbset{iptitlerow/.style={lefttitle=\IP@boxinset,righttitle=\IP@boxinset,
+  toptitle=3.2pt,bottomtitle=2.4pt,fonttitle=\IP@boxlabel\IP@boxstrut}}
+\tcbset{ipsemantic/.style={ipcallout,iptitlerow,coltitle=white,titlerule=0pt}}
 % iprole={<colour stem>}{<role word>}: uses <stem> and <stem>Tint.  A box that
 % breaks across pages repeats its label with "(continued)" on the next part.
 \tcbset{iprole/.style 2 args={ipsemantic,ipframe=#1,colback=#1Tint,colbacktitle=#1,
@@ -407,27 +617,106 @@
 
 % promptbox: the neutral member; the title is quoted-material metadata, so it
 % takes the same caps label voice in gray on a white title row.
-\newtcolorbox{promptbox}[1][Prompt]{ipcallout,colback=white,
-  ipframe=ipRule,colbacktitle=white,coltitle=ipGray,
-  lefttitle=\IP@boxinset,righttitle=\IP@boxinset,toptitle=3.2pt,bottomtitle=2.4pt,
-  fonttitle=\IP@boxlabel\IP@boxstrut,title=\IP@boxcaps{#1},
+% Frame and title row shared by promptbox and promptbox*.
+\tcbset{ipprompt/.style={ipcallout,iptitlerow,colback=white,
+  ipframe=ipRule,colbacktitle=white,coltitle=ipGray,title=\IP@boxcaps{#1},
   title after break=\IP@boxcaps{#1 (continued)},
-  titlerule=0.45pt,titlerule style={ipRule},
+  titlerule=0.45pt,titlerule style={ipRule}}}
+\newtcolorbox{promptbox}[1][Prompt]{ipprompt={#1},
   fontupper=\ttfamily\footnotesize,before upper=\raggedright}
 
-% ---------------------------------------------------------------- appendix
-\titlecontents{ipsection}[1.8em]{\vspace{0.3em}\sffamily\bfseries\small\color{ipInk}}
+% Verbatim-safe variant: \begin{promptbox*}[Title] ... \end{promptbox*}
+% The body is typeset by listings, so _ # % & { } \ need no escaping and
+% line breaks in the source are kept. Common non-ASCII punctuation and
+% accented letters are mapped via `literate' (listings cannot read raw
+% multi-byte UTF-8 under pdflatex); extend the list if you need more.
+% Long lines wrap at spaces only; a single token wider than the text block
+% sticks out of the frame.  Writes a <jobname>.listing scratch file.
+\newtcblisting{promptbox*}[1][Prompt]{ipprompt={#1},
+  listing only,listing options={basicstyle=\ttfamily\footnotesize\color{ipInk},
+    breaklines=true,breakatwhitespace=true,breakindent=0pt,
+    columns=fullflexible,keepspaces=true,showstringspaces=false,
+    showlines=true,upquote=true,aboveskip=0pt,belowskip=0pt,
+    inputencoding=utf8,extendedchars=true,
+    literate={—}{{---}}1 {–}{{--}}1 {“}{{``}}1 {”}{{''}}1
+      {‘}{{`}}1 {’}{{'}}1 {…}{{\dots}}1 {→}{{$\rightarrow$}}1
+      {é}{{\'e}}1 {è}{{\`e}}1 {ï}{{\"i}}1 {à}{{\`a}}1 {ü}{{\"u}}1 {ö}{{\"o}}1 {ä}{{\"a}}1}}
+
+% ---------------------------------------------------------------- plots
+% If the document loads pgfplots, two presets carry the page's face and palette:
+%   \begin{axis}[inkpaper, ...]       lines: accent, faint dashed, accent!55
+%                                     dotted, faint!70 dash-dot
+%   \begin{axis}[inkpaper bars, ...]  ybar on the ramp (ipRule -> ipFaint!70 ->
+%                                     ipAccent!55 -> ipAccent), top legend; add
+%                                     nodes near coords to a series for accent
+%                                     value labels
+% Both default to width=\linewidth, height=\figureheight.  Nothing is loaded
+% or defined unless pgfplots is present; the two lengths always exist.
+\newlength{\figurewidth}
+\newlength{\figureheight}
+\AtBeginDocument{\setlength{\figurewidth}{\textwidth}%
+  \setlength{\figureheight}{0.32\textwidth}}
+\AtEndPreamble{\@ifpackageloaded{pgfplots}{%
+  \pgfplotscreateplotcyclelist{inkpaper}{%
+    {ipAccent,line width=1.3pt},
+    {ipFaint,line width=1.1pt,dashed},
+    {ipAccent!55,line width=1.1pt,densely dotted},
+    {ipFaint!70,line width=1.1pt,dash dot}}
+  \pgfplotscreateplotcyclelist{inkpaper ramp}{%
+    {fill=ipRule,draw=none},
+    {fill=ipFaint!70,draw=none},
+    {fill=ipAccent!55,draw=none},
+    {fill=ipAccent,draw=none}}
+  \pgfplotsset{
+    inkpaper/.style={
+      width=\linewidth,height=\figureheight,
+      cycle list name=inkpaper,
+      axis lines*=left,axis line style={ipRule,line width=0.4pt},
+      major tick style={ipRule},minor tick style={ipRule},
+      tick label style={font=\sffamily\scriptsize,text=ipGray,
+        /pgf/number format/assume math mode=true},
+      every axis label/.style={font=\sffamily\footnotesize,text=ipGray},
+      title style={font=\sffamily\bfseries\small,text=ipInk},
+      ymajorgrids,grid style={ipRule!50,line width=0.4pt},
+      legend style={draw=none,fill=none,font=\sffamily\scriptsize},
+      legend cell align=left,
+      every node near coord/.style={font=\sffamily\bfseries\scriptsize,
+        text=ipAccent,/pgf/number format/assume math mode=true,
+        /pgf/number format/fixed,/pgf/number format/fixed zerofill,
+        /pgf/number format/precision=1}},
+    inkpaper bars/.style={
+      inkpaper,ybar,bar width=9pt,enlarge x limits=0.18,
+      cycle list name=inkpaper ramp,
+      major tick style={draw=none},
+      legend style={at={(0.5,1.04)},anchor=south,legend columns=-1,
+        /tikz/every even column/.append style={column sep=8pt}},
+      legend image code/.code={\draw[##1,draw=none] (0cm,-0.1cm) rectangle (0.25cm,0.1cm);}}}}{}}
+
+% ---------------------------------------------------------------- contents
+% Shared by \tableofcontents and the appendix contents printed by \beginappendix.
+\titlecontents{section}[1.8em]{\vspace{0.3em}\sffamily\bfseries\small\color{ipInk}}
   {\contentslabel[\color{ipAccent}\thecontentslabel]{1.8em}}{}
   {\color{ipRule}\titlerule*[0.5pc]{.}\color{ipInk}\contentspage}
-\titlecontents{ipsubsection}[3.9em]{\small\color{ipGray}}
+\titlecontents{subsection}[3.9em]{\small\color{ipGray}}
   {\contentslabel{2.1em}}{}{\color{ipRule}\titlerule*[0.5pc]{.}\color{ipGray}\contentspage}
+\titlecontents{subsubsection}[6.6em]{\small\color{ipGray}}
+  {\contentslabel{2.7em}}{}{\color{ipRule}\titlerule*[0.5pc]{.}\color{ipGray}\contentspage}
 
+% ---------------------------------------------------------------- appendix
+% \IfDocumentMetadataTF exists in LaTeX kernels from 2022-06; older kernels
+% take the plain (untagged) path.
+\providecommand{\IfDocumentMetadataTF}[2]{#2}
+% With \DocumentMetadata{tagging=on} the mini-TOC is emitted as an artifact,
+% so it creates no TOC/TOCI structures and the appendix sections stay
+% children of Document.
 \newcommand{\beginappendix}{%
   \clearpage\appendix
-  {\raggedright\sffamily\bfseries\fontsize{20}{24}\selectfont\color{ipInk}Appendix\par}%
+  {\raggedright\sffamily\bfseries\IP@fontsize{2.0}{2.4}\color{ipInk}Appendix\par}%
   \vspace{0.5em}{\color{ipAccent}\rule{2.5em}{1.5pt}}\par\vspace{0.8em}%
   \startcontents[appendix]%
-  \printcontents[appendix]{ip}{1}{\setcounter{tocdepth}{2}}%
+  \IfDocumentMetadataTF{\tagmcbegin{artifact}\SuspendTagging{ipappendix}}{}%
+  \printcontents[appendix]{}{1}{\setcounter{tocdepth}{2}}%
+  \IfDocumentMetadataTF{\ResumeTagging{ipappendix}\tagmcend}{}%
   \vspace{1.2em}}
 
 \endinput

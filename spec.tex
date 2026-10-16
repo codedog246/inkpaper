@@ -1,0 +1,74 @@
+% One-page callout specimen: a visual regression page for the callout
+% family.  Build with `make spec` (navy, teal, slate).  The palette is passed
+% from the Makefile via \PassOptionsToClass, so there is no palette option here.
+\documentclass[titlestyle=rigorous]{inkpaper}
+\shorttitle{Callout specimen}
+\papertag{Specimen}
+\begin{document}
+\section{Callout specimen}
+
+Body text at 10pt for reference. Every callout shares one grammar: 0.45pt
+rules, square corners, a 10pt inset, \verb|\small| text, and one label voice.
+The four semantic boxes carry a solid title bar in a hue derived from the
+palette accent, on a small lightness ladder (Takeaway darkest, Observation
+lightest); the finding box is the quiet member of the family; the prompt box
+is the neutral one.
+
+\begin{takeaway}[label=spec:tk]
+\textbf{Judge uncertainty identifies the rubric criteria most vulnerable to
+reward hacking.} Most exploitation concentrates on a small set of criteria
+where the judge was already uncertain before policy optimization.
+\end{takeaway}
+
+\begin{discussion}
+\textbf{Relationship to rubric dropout.} Dropout makes a fixed rubric harder
+to exploit by varying which criteria receive reward. Reliability weighting
+addresses a complementary failure mode.
+\end{discussion}
+
+A paragraph of running text between two callouts, so the before and after
+skips can be judged against ordinary paragraph rhythm, and so that
+Takeaway~\ref{spec:tk} can be cross-referenced by number.
+
+\begin{practicalguidance}
+\textbf{Calibrate the judge before starting reinforcement learning.} Sample
+each rubric criterion several times on representative prompts, estimate its
+agreement, and downweight unstable criteria.
+\end{practicalguidance}
+
+\begin{observation}
+\textbf{Reliability is a property of the criterion, not the prompt.}
+Estimates vary little across prompts that share a criterion.
+\end{observation}
+
+\begin{finding}
+Reliability weighting improves gold judge scores on every benchmark while
+leaving in-domain rubric reward unchanged.
+\end{finding}
+
+\begin{keybox}
+The same box under its backward-compatible name and default label.
+\end{keybox}
+
+\begin{promptbox}[Rubric judge prompt]
+You are grading a response against a single rubric criterion.\\[0.4em]
+Answer YES if the response satisfies the criterion, otherwise NO.
+\end{promptbox}
+
+\begin{table}[h]
+\centering
+\begin{threeparttable}% caption as wide as the tabular (class loads threeparttable)
+\caption{\captitle{\texttt{\textbackslash oursrow}.} The palette tint ends where the booktabs rules end.}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Method & HealthBench-Hard & ResearchQA & ScholarQA & Avg. \\
+\midrule
+Base model          & 31.2 & 48.9 & 52.4 & 44.2 \\
+Rubric dropout      & 38.0 & 55.7 & 57.9 & 50.5 \\
+\oursrow \textbf{Calibrated Critics} & \textbf{40.3} & \textbf{59.2} & \textbf{60.1} & \textbf{53.2} \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+\end{document}

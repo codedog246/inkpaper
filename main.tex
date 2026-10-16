@@ -1,8 +1,8 @@
 \documentclass[palette=navy,titlestyle=rigorous,titlealign=center]{inkpaper}
+% Other looks: titlestyle=open|panel, titlealign=left, palette=teal|slate
 
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
-\usetikzlibrary{positioning}
 
 \title{Calibrated Critics: Learning When to Trust\\Rubric Rewards in Open-Ended RL}
 \shorttitle{Calibrated Critics}
@@ -14,13 +14,16 @@
 \authornotes{\textsuperscript{*}Equal contribution \quad
   \textsuperscript{\dag}Corresponding author}
 \date{October 15, 2026}
+\metadata{Version}{v1 (under review)}   % any custom label works
 \correspondence{\href{mailto:author@example.com}{author@example.com}}
 \code{https://github.com/your-org/calibrated-critics}
 \model{https://huggingface.co/your-org}
 \data{https://huggingface.co/datasets/your-org}
 \project{https://your-org.github.io/calibrated-critics}
 
-% Replace these text marks with institutional logo files if available.
+% Replace these text marks with institutional logo files if available:
+% \leftlogo{\includegraphics[height=16pt]{logo/university.pdf}}; or use the
+% built-in badge helper, \leftlogo{\placeholderlogo{U}{University Name}}.
 \leftlogo{{\sffamily\bfseries\small\color{ipAccent}University Name}}
 \rightlogo{\begin{tabular}{r}
   \sffamily\bfseries\scriptsize Research Lab\\[-1pt]
@@ -43,32 +46,20 @@ judges throughout training.}
 \begin{document}
 \maketitle
 
+% Teaser: [h] keeps it under the title block; a [t] float would go above it.
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
-\begin{axis}[ybar,width=\linewidth,height=4.6cm,bar width=9pt,
-  enlarge x limits=0.18,ymin=20,ymax=68,
+\begin{axis}[inkpaper bars,width=\linewidth,height=4.6cm,ymin=20,ymax=68,
   symbolic x coords={HealthBench-Hard,ResearchQA,ScholarQA,DeepResearch},
-  xtick=data,axis lines*=left,ytick={20,40,60},
-  tick label style={font=\sffamily\scriptsize,text=ipGray,
-    /pgf/number format/assume math mode=true},
-  axis line style={ipRule},major tick style={draw=none},
-  ymajorgrids,grid style={ipRule!50},
-  legend style={draw=none,font=\sffamily\scriptsize,fill=none,
-    at={(0.5,1.04)},anchor=south,legend columns=-1,
-    /tikz/every even column/.append style={column sep=8pt}},
-  legend image code/.code={\draw[#1,draw=none] (0cm,-0.1cm) rectangle (0.25cm,0.1cm);}]
-\addplot[fill=ipRule,draw=none] coordinates
+  xtick=data,ytick={20,40,60}]
+\addplot coordinates
   {(HealthBench-Hard,31.2)(ResearchQA,48.9)(ScholarQA,52.4)(DeepResearch,38.0)};
-\addplot[fill=ipFaint!70,draw=none] coordinates
+\addplot coordinates
   {(HealthBench-Hard,36.8)(ResearchQA,53.1)(ScholarQA,57.0)(DeepResearch,41.5)};
-\addplot[fill=ipAccent!55,draw=none] coordinates
+\addplot coordinates
   {(HealthBench-Hard,38.0)(ResearchQA,55.7)(ScholarQA,57.9)(DeepResearch,43.2)};
-\addplot[fill=ipAccent,draw=none,nodes near coords,
-  every node near coord/.append style={font=\sffamily\bfseries\scriptsize,
-    text=ipAccent,/pgf/number format/assume math mode=true,
-    /pgf/number format/fixed,/pgf/number format/fixed zerofill,
-    /pgf/number format/precision=1}] coordinates
+\addplot+[nodes near coords] coordinates
   {(HealthBench-Hard,40.3)(ResearchQA,59.2)(ScholarQA,60.1)(DeepResearch,47.8)};
 \legend{Base model,Uniform rubric,Rubric dropout,\textbf{Calibrated Critics}}
 \end{axis}
@@ -98,7 +89,7 @@ Our contributions are as follows:
   \item We evaluate on four long-form benchmarks and two model scales.
 \end{itemize}
 
-\begin{takeaway}
+\begin{takeaway}[label=tk:main]
 \textbf{Judge uncertainty identifies the rubric criteria most vulnerable to
 reward hacking.} Most exploitation concentrates on a small set of criteria
 where the judge was already uncertain before policy optimization.
@@ -117,6 +108,12 @@ criteria. We instead use
 \end{equation}
 where $\rho_k(x) \in [0,1]$ is the estimated reliability of the judge on
 criterion $c_k$.
+
+\begin{observation}
+\textbf{Judge disagreement is concentrated.} A small fraction of criteria
+accounts for most of the judge's vote entropy, and these are predominantly
+stylistic rather than factual criteria.
+\end{observation}
 
 \paragraph{Estimating reliability} We sample the judge $m$ times per
 criterion and set $\rho_k$ to one minus the normalized entropy of its votes.
@@ -157,26 +154,76 @@ policy exploits unreliable criteria; reliability weighting keeps improving.}
 
 \section{Experiments}
 
+\paragraph{Setup} We post-train two policy scales with GRPO against three
+baselines: the base model, the uniform rubric reward, and rubric dropout,
+which masks a random subset of criteria at every step. We evaluate on four
+held-out benchmarks:\footnote{All benchmarks are scored by a gold judge that
+is never used during training; Appendix~\ref{app:judge} gives its
+configuration.}
+\begin{enumerate}
+  \item \textbf{HealthBench-Hard}: open-ended clinical advice graded against
+    physician-written rubrics.
+  \item \textbf{ResearchQA} and \textbf{ScholarQA}: literature-synthesis
+    questions with citation-level criteria.
+  \item \textbf{DeepResearch}: multi-document report writing.
+\end{enumerate}
+
 \begin{table}[t]
 \centering
+\begin{threeparttable}
 \caption{\captitle{Main results.} Gold judge scores on out-of-distribution
 benchmarks. Best values are shown in bold.}
 \label{tab:main}
 \small
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{lccccc}
 \toprule
-Method & HealthBench-Hard & ResearchQA & ScholarQA & Avg. \\
+Method & HealthBench-Hard & ResearchQA & ScholarQA & DeepResearch & Avg. \\
 \midrule
-Base model          & 31.2 & 48.9 & 52.4 & 44.2 \\
-Uniform rubric      & 36.8 & 53.1 & 57.0 & 49.0 \\
-Rubric dropout      & 38.0 & 55.7 & 57.9 & 50.5 \\
-\oursrow \textbf{Calibrated Critics} & \textbf{40.3} & \textbf{59.2} & \textbf{60.1} & \textbf{53.2} \\
+Base model          & 31.2 & 48.9 & 52.4 & 38.0 & 42.6 \\
+Uniform rubric      & 36.8 & 53.1 & 57.0 & 41.5 & 47.1 \\
+Rubric dropout      & 38.0 & 55.7 & 57.9 & 43.2 & 48.7 \\
+\oursrow \textbf{Calibrated Critics} & \textbf{40.3} & \textbf{59.2} & \textbf{60.1} & \textbf{47.8} & \textbf{51.9} \\
 \bottomrule
 \end{tabular}
+\end{threeparttable}
 \end{table}
 
-Table~\ref{tab:main} reports the main results and Figure~\ref{fig:curve}
-shows the training dynamics.
+\subsection{Main results}
+Table~\ref{tab:main} reports gold judge scores on all four benchmarks and
+Figure~\ref{fig:curve} shows the training dynamics. The gain is largest on
+DeepResearch, whose rubrics contain the most criteria the judge is uncertain
+about, and smallest on ScholarQA, whose criteria are mostly citation checks
+that the judge grades consistently.
+
+\begin{finding}
+Reliability weighting improves gold judge scores on every benchmark while
+leaving in-domain rubric reward unchanged, consistent with
+Takeaway~\ref{tk:main}.
+\end{finding}
+
+\subsection{How many judge samples are needed?}
+Figure~\ref{fig:ablation} varies the number of judge samples $m$ used to
+estimate $\rho_k$. Most of the benefit arrives by $m=3$; beyond $m=5$ the
+estimate is stable and the extra judge calls are wasted.
+
+% [htb]: in place after the paragraph that cites it when it fits, else the
+% next page top. The inkpaper preset supplies fonts, axis colours and grid;
+% per-series keys (marks, dashes) and the axis limits stay explicit.
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[inkpaper,width=0.6\linewidth,height=3.6cm,
+  xlabel={Judge samples $m$},ylabel={Avg.\ gold score},
+  xtick={1,3,5,9},xmin=1,xmax=9,ymin=46,ymax=53]
+\addplot[ipAccent,line width=1.3pt,mark=*,mark size=1.8pt] coordinates
+  {(1,47.4)(3,51.0)(5,51.9)(9,52.0)};
+\addplot[ipFaint,dashed,line width=1pt,domain=1:9] {47.1};
+\end{axis}
+\end{tikzpicture}
+\caption{\captitle{Judge-sample ablation.} Average gold score as a function of
+$m$; the dashed line is the uniform rubric baseline.}
+\label{fig:ablation}
+\end{figure}
 
 \begin{practicalguidance}
 \textbf{Calibrate the judge before starting reinforcement learning.} Sample
@@ -184,6 +231,11 @@ each rubric criterion several times on representative prompts, estimate its
 agreement, and downweight unstable criteria. Recompute these estimates
 periodically as the policy distribution shifts.
 \end{practicalguidance}
+
+\section{Limitations}
+Reliability weighting assumes that judge disagreement signals a weak criterion
+rather than a hard response; when the two coincide, it down-weights exactly
+the criteria that matter most.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
@@ -197,6 +249,7 @@ We train with GRPO using 8 rollouts per prompt, a learning rate of
 $10^{-6}$, and a KL coefficient of 0.001 for 500 steps.
 
 \subsection{Judge configuration}
+\label{app:judge}
 The training judge is sampled $m=5$ times per criterion at temperature 0.7.
 
 \section{Prompts}
@@ -208,6 +261,17 @@ Response: \{response\}\\
 Criterion: \{criterion\}\\[0.4em]
 Answer YES if the response satisfies the criterion, otherwise NO.
 \end{promptbox}
+
+The judge's output format is fixed with a second, machine-readable prompt,
+pasted verbatim:
+\begin{promptbox*}[Judge output format]
+Question: {question}
+Response: {response}
+Criterion: {criterion}
+
+Return JSON: {"verdict": "YES" | "NO", "confidence": 0-100}
+# confidence is a percentage; use max_tokens=64.
+\end{promptbox*}
 
 \section{Additional results}
 Per-benchmark training curves are shown in the supplementary material.

@@ -25,7 +25,7 @@ branding.
 \documentclass[
   palette=navy,
   titlestyle=rigorous,
-  titlealign=left
+  titlealign=center
 ]{inkpaper}
 
 \title{Your Paper Title}
@@ -54,7 +54,7 @@ The result is `main.pdf`.
 | --- | --- | --- |
 | `palette` | `navy`, `teal`, `slate` | `navy` |
 | `titlestyle` | `rigorous`, `open`, `panel` | `rigorous` |
-| `titlealign` | `left`, `center` | `left` |
+| `titlealign` | `center`, `left` | `center` |
 
 For the formal single-column example shown in the repository:
 
@@ -62,7 +62,7 @@ For the formal single-column example shown in the repository:
 \documentclass[
   palette=navy,
   titlestyle=rigorous,
-  titlealign=left
+  titlealign=center
 ]{inkpaper}
 ```
 

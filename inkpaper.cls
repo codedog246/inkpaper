@@ -4,7 +4,7 @@
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=IP,prefix=IP@}
 \DeclareStringOption[navy]{palette}      % navy | teal | slate
-\DeclareStringOption[left]{titlealign}   % left | center
+\DeclareStringOption[center]{titlealign} % center | left
 \DeclareStringOption[rigorous]{titlestyle} % rigorous | open | panel
 \DeclareDefaultOption{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessKeyvalOptions*

@@ -224,15 +224,12 @@
     \IP@rigorousheading\IP@linksblock\IP@metablock
   \endgroup
   \ifx\IP@abstract\@empty\else
-    \vspace{0.9em}%
-    {\color{ipRule}\hrule height 0.45pt}\vspace{0.8em}%
-    \begin{center}
-      \begin{minipage}{0.90\linewidth}
-        {\centering\bfseries\small Abstract\par}\vspace{0.35em}
-        {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}
-      \end{minipage}
-    \end{center}
-    \vspace{0.35em}{\color{ipRule}\hrule height 0.45pt}%
+    \vspace{1.0em}%
+    \begin{tcolorbox}[enhanced,colback=ipPanel,colframe=ipRule,
+      boxrule=0.4pt,arc=2pt,left=16pt,right=16pt,top=11pt,bottom=12pt]
+      {\sffamily\bfseries\small\color{ipInk}Abstract\par}\vspace{0.35em}
+      {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}
+    \end{tcolorbox}%
   \fi}
 
 \newcommand{\IP@panelstyle}{%

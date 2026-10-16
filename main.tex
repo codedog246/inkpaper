@@ -1,0 +1,209 @@
+\documentclass[palette=navy,titlestyle=panel,titlealign=left]{inkpaper}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{positioning}
+
+\title{Calibrated Critics: Learning When to Trust\\Rubric Rewards in Open-Ended RL}
+\shorttitle{Calibrated Critics}
+\papertag{Preprint}
+\author{Alice Chen\textsuperscript{1,*}, \quad Bo Li\textsuperscript{1,*}, \quad
+  Carlos Diaz\textsuperscript{2}, \quad Dana Park\textsuperscript{1,\dag}}
+\affiliations{\textsuperscript{1}Affiliation One \quad
+  \textsuperscript{2}Affiliation Two}
+\authornotes{\textsuperscript{*}Equal contribution \quad
+  \textsuperscript{\dag}Corresponding author}
+\date{October 15, 2026}
+\correspondence{\href{mailto:author@example.com}{author@example.com}}
+\code{https://github.com/your-org/calibrated-critics}
+\model{https://huggingface.co/your-org}
+\data{https://huggingface.co/datasets/your-org}
+\project{https://your-org.github.io/calibrated-critics}
+
+% Replace with \includegraphics[height=0.6cm]{logo/your-university.pdf}
+\leftlogo{\tikz[baseline=-0.6ex]{\node[fill=ipAccent,text=white,
+  font=\sffamily\bfseries\small,minimum size=16pt,inner sep=0pt,
+  rounded corners=2pt] (u) {U};
+  \node[right=3pt of u.east,anchor=west,align=left,
+  font=\sffamily\bfseries\footnotesize,text=ipInk] {University Name};}}
+\rightlogo{\tikz[baseline=-0.6ex]{\node[draw=ipAccent,line width=0.8pt,
+  text=ipAccent,font=\sffamily\bfseries\scriptsize,minimum size=16pt,
+  inner sep=0pt,rounded corners=2pt] (l) {L};
+  \node[right=3pt of l.east,anchor=west,align=left,
+  font=\sffamily\scriptsize,text=ipGray] {Research Lab\\Institute Name};}}
+\panellogo{\tikz[baseline=-0.6ex]{\node[fill=ipAccent,text=white,
+  font=\sffamily\bfseries\small,minimum size=16pt,inner sep=0pt,
+  rounded corners=2pt] (u) {U};
+  \node[right=3pt of u.east,anchor=west,
+  font=\sffamily\bfseries\footnotesize,text=ipInk] {University Name};}}
+\firstpagenote{\faEnvelope[regular]\enspace Correspondence to
+  \href{mailto:author@example.com}{\texttt{author@example.com}}.
+  Preprint, work in progress.}
+
+\abstract{Rubric-based reinforcement learning has become a standard way to
+post-train language models on tasks without verifiable answers, yet the judge
+that scores each rubric item is itself an imperfect proxy. We show that the
+judge's confidence is informative: rubric items on which the judge is
+uncertain account for most of the reward that a policy later exploits. We
+introduce \emph{Calibrated Critics}, which reweights each criterion by an
+estimate of the judge's reliability on that criterion and prompt. Across
+long-form research and medical benchmarks, our method improves held-out gold
+judge scores by up to 6.1 points while matching the baseline's in-domain
+reward, and it substantially narrows the gap between training and gold
+judges throughout training.}
+
+\begin{document}
+\maketitle
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[ybar,width=\linewidth,height=4.6cm,bar width=9pt,
+  enlarge x limits=0.18,ymin=20,ymax=68,
+  symbolic x coords={HealthBench-Hard,ResearchQA,ScholarQA,DeepResearch},
+  xtick=data,axis lines*=left,ytick={20,40,60},
+  tick label style={font=\sffamily\scriptsize,text=ipGray,
+    /pgf/number format/assume math mode=true},
+  axis line style={ipRule},major tick style={draw=none},
+  ymajorgrids,grid style={ipRule!50},
+  legend style={draw=none,font=\sffamily\scriptsize,fill=none,
+    at={(0.5,1.04)},anchor=south,legend columns=-1,
+    /tikz/every even column/.append style={column sep=8pt}},
+  legend image code/.code={\draw[#1,draw=none] (0cm,-0.1cm) rectangle (0.25cm,0.1cm);}]
+\addplot[fill=ipRule,draw=none] coordinates
+  {(HealthBench-Hard,31.2)(ResearchQA,48.9)(ScholarQA,52.4)(DeepResearch,38.0)};
+\addplot[fill=ipFaint!70,draw=none] coordinates
+  {(HealthBench-Hard,36.8)(ResearchQA,53.1)(ScholarQA,57.0)(DeepResearch,41.5)};
+\addplot[fill=ipAccent!55,draw=none] coordinates
+  {(HealthBench-Hard,38.0)(ResearchQA,55.7)(ScholarQA,57.9)(DeepResearch,43.2)};
+\addplot[fill=ipAccent,draw=none,nodes near coords,
+  every node near coord/.append style={font=\sffamily\bfseries\scriptsize,
+    text=ipAccent,/pgf/number format/assume math mode=true,
+    /pgf/number format/fixed,/pgf/number format/fixed zerofill,
+    /pgf/number format/precision=1}] coordinates
+  {(HealthBench-Hard,40.3)(ResearchQA,59.2)(ScholarQA,60.1)(DeepResearch,47.8)};
+\legend{Base model,Uniform rubric,Rubric dropout,\textbf{Calibrated Critics}}
+\end{axis}
+\end{tikzpicture}
+\caption{\captitle{Out-of-distribution results.} Gold judge scores on four
+long-form benchmarks. Calibrated Critics improves over every baseline on all
+four.}
+\label{fig:teaser}
+\end{figure}
+
+\section{Introduction}
+
+Reinforcement learning with verifiable rewards works well when a ground truth
+exists~\citep{shao2024deepseekmath}. Many of the tasks we care most about,
+such as explaining a research area or giving medical advice, are open-ended.
+A common recipe is to write a rubric for each prompt and let an LLM judge
+grade each criterion~\citep{gunjal2025rubrics}. The rubric, however, is a
+proxy, and a policy optimized against it long enough learns to exploit the
+difference~\citep{gao2023scaling}.
+
+Our contributions are as follows:
+\begin{itemize}
+  \item We show that judge uncertainty predicts which rubric items will be
+    exploited, before exploitation happens.
+  \item We propose a per-criterion reliability weight that is cheap to
+    estimate and drops into any GRPO-style objective.
+  \item We evaluate on four long-form benchmarks and two model scales.
+\end{itemize}
+
+\begin{keybox}
+Most reward hacking concentrates on a small set of rubric items where the
+judge was already uncertain at the start of training.
+\end{keybox}
+
+\section{Method}
+
+\subsection{Reliability-weighted rubric reward}
+
+Given a prompt $x$ with rubric $\{c_k\}_{k=1}^{K}$ and weights $w_k$, the
+standard reward for a response $y$ is the weighted fraction of satisfied
+criteria. We instead use
+\begin{equation}
+  r(x, y) \;=\; \frac{\sum_{k=1}^{K} w_k\,\rho_k(x)\,\mathbb{I}[\,y \models c_k\,]}
+                    {\sum_{k=1}^{K} w_k\,\rho_k(x)},
+\end{equation}
+where $\rho_k(x) \in [0,1]$ is the estimated reliability of the judge on
+criterion $c_k$.
+
+\paragraph{Estimating reliability} We sample the judge $m$ times per
+criterion and set $\rho_k$ to one minus the normalized entropy of its votes.
+
+\sidefigure[0.6]{%
+\begin{tikzpicture}
+\begin{axis}[width=\linewidth,height=4.8cm,
+  axis lines=left,xlabel={Training step},ylabel={Gold judge score},
+  every axis label/.style={font=\sffamily\footnotesize,text=ipGray},
+  tick label style={font=\sffamily\scriptsize,text=ipGray,
+    /pgf/number format/assume math mode=true},
+  axis line style={ipRule},major tick style={ipRule},
+  ymajorgrids,grid style={ipRule!50},
+  legend style={draw=none,font=\sffamily\scriptsize,fill=none,at={(0.02,0.98)},anchor=north west},
+  legend cell align=left,xmin=0,xmax=500,ymin=40,ymax=64]
+\addplot[ipAccent,line width=1.3pt,smooth] coordinates
+  {(0,44)(100,51)(200,56)(300,59)(400,61)(500,62)};
+\addlegendentry{Calibrated Critics}
+\addplot[ipFaint,line width=1.1pt,smooth,dashed] coordinates
+  {(0,44)(100,50.5)(200,54)(300,54.5)(400,53)(500,51.5)};
+\addlegendentry{Uniform rubric}
+\end{axis}
+\end{tikzpicture}}{%
+\caption{\captitle{Training dynamics.} Gold judge score on held-out prompts
+during training. The uniform rubric baseline peaks and then declines as the
+policy exploits unreliable criteria; reliability weighting keeps improving.}
+\label{fig:curve}}
+
+\section{Experiments}
+
+\begin{table}[t]
+\centering
+\caption{\captitle{Main results.} Gold judge scores on out-of-distribution
+benchmarks. Best in bold; our method is shaded.}
+\label{tab:main}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Method & HealthBench-Hard & ResearchQA & ScholarQA & Avg. \\
+\midrule
+Base model          & 31.2 & 48.9 & 52.4 & 44.2 \\
+Uniform rubric      & 36.8 & 53.1 & 57.0 & 49.0 \\
+Rubric dropout      & 38.0 & 55.7 & 57.9 & 50.5 \\
+\oursrow \textbf{Calibrated Critics} & \textbf{40.3} & \textbf{59.2} & \textbf{60.1} & \textbf{53.2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:main} reports the main results and Figure~\ref{fig:curve}
+shows the training dynamics.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\beginappendix
+
+\section{Implementation details}
+
+\subsection{Training hyperparameters}
+We train with GRPO using 8 rollouts per prompt, a learning rate of
+$10^{-6}$, and a KL coefficient of 0.001 for 500 steps.
+
+\subsection{Judge configuration}
+The training judge is sampled $m=5$ times per criterion at temperature 0.7.
+
+\section{Prompts}
+
+\begin{promptbox}[Rubric judge prompt]
+You are grading a response against a single rubric criterion.\\[0.4em]
+Question: \{question\}\\
+Response: \{response\}\\
+Criterion: \{criterion\}\\[0.4em]
+Answer YES if the response satisfies the criterion, otherwise NO.
+\end{promptbox}
+
+\section{Additional results}
+Per-benchmark training curves are shown in the supplementary material.
+
+\end{document}

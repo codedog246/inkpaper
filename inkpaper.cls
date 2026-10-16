@@ -139,14 +139,15 @@
 \newcommand{\firstpagenote}[1]{\renewcommand{\IP@firstnote}{#1}}
 \newcommand{\metadata}[2]{%
   \g@addto@macro\IP@meta{%
-    \makebox[6.2em][l]{\sffamily\bfseries\footnotesize\color{ipAccent}#1}%
-    {\small #2}\par}%
+    \makebox[6.2em][l]{\sffamily\bfseries\normalsize\color{black}#1}%
+    {\hypersetup{urlcolor=black}\normalsize\color{black}#2}\par}%
   \g@addto@macro\IP@metainline{%
-    \mbox{{\sffamily\bfseries\footnotesize\color{ipAccent}#1}\enspace{\small #2}}\quad}}
+    \mbox{{\sffamily\bfseries\normalsize\color{black}#1}\enspace
+      {\hypersetup{urlcolor=black}\normalsize\color{black}#2}}\quad}}
 \renewcommand{\date}[1]{\metadata{Date}{#1}}
 \newcommand{\correspondence}[1]{\metadata{Contact}{#1}}
 \newcommand{\linkitem}[3]{\g@addto@macro\IP@links{%
-  \mbox{\href{#3}{\sffamily\footnotesize\bfseries\color{ipAccent}#2}}\quad}}
+  \mbox{\href{#3}{\sffamily\normalsize\bfseries\color{black}#2}}\quad}}
 \newcommand{\code}[1]{\linkitem{\faGithub}{Code}{#1}}
 \newcommand{\project}[1]{\linkitem{\faGlobe}{Project}{#1}}
 \newcommand{\data}[1]{\linkitem{\faDatabase}{Data}{#1}}

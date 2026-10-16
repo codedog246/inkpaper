@@ -186,8 +186,6 @@
     \vspace{0.2em}{\footnotesize\color{ipGray}\IP@notes\par}\fi}
 
 \newcommand{\IP@rigorousheading}{%
-  {\sffamily\scriptsize\color{ipGray}%
-    \textls[140]{\MakeUppercase{\IP@tag}}\par}\vspace{0.55em}
   {\bfseries\fontsize{19}{23}\selectfont\color{ipInk}\@title\par}%
   \vspace{0.6em}
   {\bfseries\fontsize{10}{12.5}\selectfont\color{ipInk}\@author\par}%
@@ -195,7 +193,7 @@
     \ifx\IP@notes\@empty\else
       \vspace{0.2em}{\footnotesize\color{ipGray}\IP@notes\par}\fi
   \else
-    \vspace{0.25em}{\small\color{ipGray}\IP@affil%
+    \vspace{0.45em}{\small\color{ipGray}\IP@affil%
       \ifx\IP@notes\@empty\else\quad{\footnotesize\IP@notes}\fi\par}%
   \fi}
 

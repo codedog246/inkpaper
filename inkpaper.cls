@@ -242,7 +242,7 @@
 
 \newcommand{\IP@rigorousstyle}{%
   \begingroup\IP@align
-    \IP@rigorousheading
+    \IP@rigorousheading\IP@linksblock
   \endgroup
   \ifx\IP@abstract\@empty\else
     \vspace{0.55em}%
@@ -275,14 +275,12 @@
   \footnotetext{%
     {\footnotesize\color{ipGray}\IP@firstnote}%
     \ifx\IP@firstnote\@empty\else\quad\fi
-    \IP@links\IP@metainline}%
+    \IP@metainline}%
   \endgroup}
 
 \newcommand{\IP@rigorousfooter}{%
   \ifx\IP@firstnote\@empty
-    \ifx\IP@links\@empty
-      \ifx\IP@meta\@empty\else\IP@printrigorousfooter\fi
-    \else\IP@printrigorousfooter\fi
+    \ifx\IP@meta\@empty\else\IP@printrigorousfooter\fi
   \else\IP@printrigorousfooter\fi}
 
 \renewcommand{\maketitle}{%

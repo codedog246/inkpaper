@@ -242,7 +242,7 @@
 
 \newcommand{\IP@rigorousstyle}{%
   \begingroup\IP@align
-    \IP@rigorousheading\IP@rigorousinfoblock
+    \IP@rigorousheading
   \endgroup
   \ifx\IP@abstract\@empty\else
     \vspace{0.55em}%
@@ -270,6 +270,21 @@
     \begin{minipage}[b]{0.3\linewidth}\raggedleft\IP@panellogo\end{minipage}%
   \end{tcolorbox}}
 
+\newcommand{\IP@printrigorousfooter}{%
+  \begingroup\renewcommand{\thefootnote}{}%
+  \footnotetext{%
+    {\footnotesize\color{ipGray}\IP@firstnote}%
+    \ifx\IP@firstnote\@empty\else\quad\fi
+    \IP@links\IP@metainline}%
+  \endgroup}
+
+\newcommand{\IP@rigorousfooter}{%
+  \ifx\IP@firstnote\@empty
+    \ifx\IP@links\@empty
+      \ifx\IP@meta\@empty\else\IP@printrigorousfooter\fi
+    \else\IP@printrigorousfooter\fi
+  \else\IP@printrigorousfooter\fi}
+
 \renewcommand{\maketitle}{%
   \ifdefstring{\IP@titlestyle}{panel}{\ifx\IP@panellogo\@empty\else
     \let\IP@leftlogo\@empty\let\IP@rightlogo\@empty\fi}{}%
@@ -279,10 +294,11 @@
     \else\thispagestyle{ipfirst}\fi}%
   \ifdefstring{\IP@titlestyle}{panel}{\IP@panelstyle}{%
     \ifdefstring{\IP@titlestyle}{open}{\IP@openstyle}{\IP@rigorousstyle}}%
-  \ifx\IP@firstnote\@empty\else
-    \begingroup\renewcommand{\thefootnote}{}%
-    \footnotetext{\color{ipGray}\IP@firstnote}\endgroup
-  \fi
+  \ifdefstring{\IP@titlestyle}{rigorous}{\IP@rigorousfooter}{%
+    \ifx\IP@firstnote\@empty\else
+      \begingroup\renewcommand{\thefootnote}{}%
+      \footnotetext{\color{ipGray}\IP@firstnote}\endgroup
+    \fi}%
   \vspace{0.6em}%
 }
 

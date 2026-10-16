@@ -32,6 +32,8 @@
 \definecolor{ipInk}{HTML}{1B1F27}
 \definecolor{ipGray}{HTML}{5F6672}
 \definecolor{ipFaint}{HTML}{8A919C}
+\definecolor{ipAbstractBlue}{HTML}{E7F0FA}
+\definecolor{ipAbstractBorder}{HTML}{AFC5DF}
 \definecolor{ipTakeaway}{HTML}{075B58}
 \definecolor{ipDiscussion}{HTML}{5A0B55}
 \definecolor{ipGuidance}{HTML}{3E91AA}
@@ -168,7 +170,7 @@
   \fancyhead[L]{\IP@leftlogo}%
   \fancyhead[R]{\IP@rightlogo}%
   \fancyfoot[C]{\sffamily\footnotesize\color{ipGray}\thepage}%
-  \renewcommand{\headrule}{\vspace{4pt}{\color{ipAccent}\hrule height 0.8pt}}}
+  \renewcommand{\headrule}{\vspace{4pt}{\color{black}\hrule height 0.8pt}}}
 
 % ---------------------------------------------------------------- title block
 \newcommand{\IP@heading}{%
@@ -233,7 +235,7 @@
   \endgroup
   \ifx\IP@abstract\@empty\else
     \vspace{0.75em}%
-    \begin{tcolorbox}[enhanced,colback=ipPanel,colframe=ipRule,
+    \begin{tcolorbox}[enhanced,colback=ipAbstractBlue,colframe=ipAbstractBorder,
       boxrule=0.4pt,arc=2pt,left=16pt,right=16pt,top=11pt,bottom=12pt]
       {\sffamily\bfseries\small\color{ipInk}Abstract\par}\vspace{0.35em}
       {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}

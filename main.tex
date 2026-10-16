@@ -99,10 +99,11 @@ Our contributions are as follows:
   \item We evaluate on four long-form benchmarks and two model scales.
 \end{itemize}
 
-\begin{finding}
-Most reward hacking concentrates on a small set of rubric items where the
-judge was already uncertain at the start of training.
-\end{finding}
+\begin{takeaway}
+\textbf{Judge uncertainty identifies the rubric criteria most vulnerable to
+reward hacking.} Most exploitation concentrates on a small set of criteria
+where the judge was already uncertain before policy optimization.
+\end{takeaway}
 
 \section{Method}
 
@@ -120,6 +121,14 @@ criterion $c_k$.
 
 \paragraph{Estimating reliability} We sample the judge $m$ times per
 criterion and set $\rho_k$ to one minus the normalized entropy of its votes.
+
+\begin{discussion}
+\textbf{Relationship to rubric dropout.} Dropout makes a fixed rubric harder
+to exploit by varying which criteria receive reward. Reliability weighting
+addresses a complementary failure mode: it reduces the influence of criteria
+whose judgments are unstable even before the policy begins to optimize
+against them.
+\end{discussion}
 
 \begin{figure}[t]
 \centering
@@ -169,6 +178,13 @@ Rubric dropout      & 38.0 & 55.7 & 57.9 & 50.5 \\
 
 Table~\ref{tab:main} reports the main results and Figure~\ref{fig:curve}
 shows the training dynamics.
+
+\begin{practicalguidance}
+\textbf{Calibrate the judge before starting reinforcement learning.} Sample
+each rubric criterion several times on representative prompts, estimate its
+agreement, and downweight unstable criteria. Recompute these estimates
+periodically as the policy distribution shifts.
+\end{practicalguidance}
 
 \bibliographystyle{plainnat}
 \bibliography{references}

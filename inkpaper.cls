@@ -32,6 +32,10 @@
 \definecolor{ipInk}{HTML}{1B1F27}
 \definecolor{ipGray}{HTML}{5F6672}
 \definecolor{ipFaint}{HTML}{8A919C}
+\definecolor{ipTakeaway}{HTML}{075B58}
+\definecolor{ipDiscussion}{HTML}{5A0B55}
+\definecolor{ipGuidance}{HTML}{3E91AA}
+\definecolor{ipObservation}{HTML}{555B65}
 \RequirePackage{etoolbox}
 \ifdefstring{\IP@palette}{teal}{%
   \definecolor{ipAccent}{HTML}{1D5C63}%
@@ -275,6 +279,27 @@
 % Backward-compatible name; the rigorous rendering is intentionally unboxed.
 \newtcolorbox{keybox}[1][Main finding]{ipfinding,
   before upper={\textbf{#1.}\enspace}}
+
+\tcbset{ipsemantic/.style={enhanced,breakable,arc=2pt,outer arc=2pt,
+  boxrule=0.55pt,left=8pt,right=8pt,top=7pt,bottom=7pt,
+  before skip=0.9em,after skip=0.9em,coltitle=white,
+  fonttitle=\bfseries\small,titlerule=0pt}}
+
+\newtcolorbox[auto counter]{takeaway}[1][]{
+  ipsemantic,colframe=ipTakeaway,colback=ipTakeaway!3!white,
+  colbacktitle=ipTakeaway,title=Takeaway~\thetcbcounter,#1}
+
+\newtcolorbox[auto counter]{discussion}[1][]{
+  ipsemantic,colframe=ipDiscussion,colback=ipDiscussion!3!white,
+  colbacktitle=ipDiscussion,title=Discussion~\thetcbcounter,#1}
+
+\newtcolorbox[auto counter]{practicalguidance}[1][]{
+  ipsemantic,colframe=ipGuidance,colback=ipGuidance!3!white,
+  colbacktitle=ipGuidance,title=Practical Guidance~\thetcbcounter,#1}
+
+\newtcolorbox[auto counter]{observation}[1][]{
+  ipsemantic,colframe=ipObservation,colback=ipObservation!3!white,
+  colbacktitle=ipObservation,title=Observation~\thetcbcounter,#1}
 
 \newtcolorbox{promptbox}[1][Prompt]{enhanced,breakable,colback=white,
   colframe=ipRule,boxrule=0.45pt,arc=0pt,colbacktitle=white,

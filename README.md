@@ -14,6 +14,7 @@ branding.
 - Left-aligned or centered title blocks
 - Optional institution and lab logos
 - Metadata links for code, models, data, and project pages
+- Numbered takeaway, discussion, guidance, and observation boxes
 - Formal finding statements, side captions, and appendix prompt blocks
 - Styled appendix title and automatic appendix contents
 - Standard `pdflatex` workflow suitable for arXiv
@@ -76,6 +77,18 @@ For the formal single-column example shown in the repository:
 \begin{finding}[Main finding]
 The main finding in one or two sentences.
 \end{finding}
+
+\begin{takeaway}
+\textbf{Primary conclusion.} Supporting evidence and scope.
+\end{takeaway}
+
+\begin{discussion}
+\textbf{Connection to prior work.} A focused interpretation.
+\end{discussion}
+
+\begin{practicalguidance}
+\textbf{Recommended practice.} Concrete guidance for practitioners.
+\end{practicalguidance}
 
 \begin{promptbox}[Judge prompt]
 Your prompt text.

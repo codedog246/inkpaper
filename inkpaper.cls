@@ -5,7 +5,7 @@
 \SetupKeyvalOptions{family=IP,prefix=IP@}
 \DeclareStringOption[navy]{palette}      % navy | teal | slate
 \DeclareStringOption[left]{titlealign}   % left | center
-\DeclareStringOption[open]{titlestyle}   % open | panel
+\DeclareStringOption[rigorous]{titlestyle} % rigorous | open | panel
 \DeclareDefaultOption{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessKeyvalOptions*
 \LoadClass[10pt]{article}
@@ -106,8 +106,8 @@
 \renewcommand{\footnoterule}{{\color{ipRule}\hrule width 0.3\textwidth height 0.4pt}\vspace{4pt}}
 
 % ---------------------------------------------------------------- tables
-% Highlight the row of your own method: \oursrow Ours & ... \\
-\newcommand{\oursrow}{\rowcolor{ipPanel}}
+% Kept for source compatibility; rigorous tables rely on typography, not fill.
+\newcommand{\oursrow}{}
 
 % ---------------------------------------------------------------- metadata
 \newcommand{\IP@tag}{Preprint}
@@ -140,7 +140,7 @@
 \renewcommand{\date}[1]{\metadata{Date}{#1}}
 \newcommand{\correspondence}[1]{\metadata{Contact}{#1}}
 \newcommand{\linkitem}[3]{\g@addto@macro\IP@links{%
-  \mbox{\href{#3}{{\color{ipAccent}#1}\enspace{\sffamily\small\color{ipInk}#2}}}\qquad}}
+  \mbox{\href{#3}{\sffamily\footnotesize\bfseries\color{ipAccent}#2}}\qquad}}
 \newcommand{\code}[1]{\linkitem{\faGithub}{Code}{#1}}
 \newcommand{\project}[1]{\linkitem{\faGlobe}{Project}{#1}}
 \newcommand{\data}[1]{\linkitem{\faDatabase}{Data}{#1}}
@@ -178,6 +178,17 @@
   \ifx\IP@notes\@empty\else
     \vspace{0.2em}{\footnotesize\color{ipGray}\IP@notes\par}\fi}
 
+\newcommand{\IP@rigorousheading}{%
+  {\sffamily\scriptsize\color{ipGray}%
+    \textls[140]{\MakeUppercase{\IP@tag}}\par}\vspace{0.8em}
+  {\bfseries\fontsize{22}{27}\selectfont\color{ipInk}\@title\par}%
+  \vspace{0.9em}
+  {\bfseries\fontsize{10.5}{14}\selectfont\color{ipInk}\@author\par}%
+  \ifx\IP@affil\@empty\else
+    \vspace{0.4em}{\small\color{ipGray}\IP@affil\par}\fi
+  \ifx\IP@notes\@empty\else
+    \vspace{0.15em}{\footnotesize\color{ipGray}\IP@notes\par}\fi}
+
 \newcommand{\IP@linksblock}{%
   \ifx\IP@links\@empty\else
     \vspace{0.8em}{\IP@links\unskip\par}\fi}
@@ -204,6 +215,22 @@
     \end{tcolorbox}%
   \fi}
 
+\newcommand{\IP@rigorousstyle}{%
+  \begingroup\IP@align
+    \IP@rigorousheading\IP@linksblock\IP@metablock
+  \endgroup
+  \ifx\IP@abstract\@empty\else
+    \vspace{0.9em}%
+    {\color{ipRule}\hrule height 0.45pt}\vspace{0.8em}%
+    \begin{center}
+      \begin{minipage}{0.90\linewidth}
+        {\centering\bfseries\small Abstract\par}\vspace{0.35em}
+        {\small\linespread{1.10}\selectfont\color{ipInk}\IP@abstract\par}
+      \end{minipage}
+    \end{center}
+    \vspace{0.35em}{\color{ipRule}\hrule height 0.45pt}%
+  \fi}
+
 \newcommand{\IP@panelstyle}{%
   \begin{tcolorbox}[enhanced,colback=ipPanel,boxrule=0pt,frame hidden,
     arc=6pt,left=22pt,right=22pt,top=20pt,bottom=18pt]
@@ -227,7 +254,8 @@
   \ifx\IP@leftlogo\@empty\ifx\IP@rightlogo\@empty
     \thispagestyle{plain}\else\thispagestyle{ipfirst}\fi
   \else\thispagestyle{ipfirst}\fi
-  \ifdefstring{\IP@titlestyle}{panel}{\IP@panelstyle}{\IP@openstyle}%
+  \ifdefstring{\IP@titlestyle}{panel}{\IP@panelstyle}{%
+    \ifdefstring{\IP@titlestyle}{open}{\IP@openstyle}{\IP@rigorousstyle}}%
   \ifx\IP@firstnote\@empty\else
     \begingroup\renewcommand{\thefootnote}{}%
     \footnotetext{\color{ipGray}\IP@firstnote}\endgroup
@@ -236,15 +264,22 @@
 }
 
 % ---------------------------------------------------------------- boxes
-\newtcolorbox{keybox}[1][Key takeaway]{enhanced,colback=ipPanel,boxrule=0pt,
-  frame hidden,arc=2pt,left=12pt,right=12pt,top=8pt,bottom=8pt,
-  borderline west={2pt}{0pt}{ipAccent},fontupper=\small,
-  before upper={{\sffamily\bfseries\small\color{ipAccent}#1\par}\vspace{0.25em}}}
+\tcbset{ipfinding/.style={enhanced,breakable,colback=white,boxrule=0pt,
+  frame hidden,arc=0pt,boxsep=0pt,left=0pt,right=0pt,top=7pt,bottom=7pt,
+  borderline north={0.45pt}{0pt}{ipRule},
+  borderline south={0.45pt}{0pt}{ipRule},fontupper=\small}}
+
+\newtcolorbox{finding}[1][Main finding]{ipfinding,
+  before upper={\textbf{#1.}\enspace}}
+
+% Backward-compatible name; the rigorous rendering is intentionally unboxed.
+\newtcolorbox{keybox}[1][Main finding]{ipfinding,
+  before upper={\textbf{#1.}\enspace}}
 
 \newtcolorbox{promptbox}[1][Prompt]{enhanced,breakable,colback=white,
-  colframe=ipRule,boxrule=0.6pt,arc=3pt,colbacktitle=ipPanel,
-  coltitle=ipAccent,fonttitle=\sffamily\bfseries\footnotesize,title=#1,
-  titlerule=0.6pt,left=10pt,right=10pt,top=7pt,bottom=7pt,
+  colframe=ipRule,boxrule=0.45pt,arc=0pt,colbacktitle=white,
+  coltitle=ipInk,fonttitle=\bfseries\footnotesize,title=#1,
+  titlerule=0.45pt,left=10pt,right=10pt,top=7pt,bottom=7pt,
   fontupper=\ttfamily\footnotesize,before upper=\raggedright}
 
 % ---------------------------------------------------------------- appendix

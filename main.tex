@@ -1,4 +1,4 @@
-\documentclass[palette=navy,titlestyle=panel,titlealign=left]{inkpaper}
+\documentclass[palette=navy,titlestyle=rigorous,titlealign=left]{inkpaper}
 
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
@@ -20,25 +20,14 @@
 \data{https://huggingface.co/datasets/your-org}
 \project{https://your-org.github.io/calibrated-critics}
 
-% Replace with \includegraphics[height=0.6cm]{logo/your-university.pdf}
-\leftlogo{\tikz[baseline=-0.6ex]{\node[fill=ipAccent,text=white,
-  font=\sffamily\bfseries\small,minimum size=16pt,inner sep=0pt,
-  rounded corners=2pt] (u) {U};
-  \node[right=3pt of u.east,anchor=west,align=left,
-  font=\sffamily\bfseries\footnotesize,text=ipInk] {University Name};}}
-\rightlogo{\tikz[baseline=-0.6ex]{\node[draw=ipAccent,line width=0.8pt,
-  text=ipAccent,font=\sffamily\bfseries\scriptsize,minimum size=16pt,
-  inner sep=0pt,rounded corners=2pt] (l) {L};
-  \node[right=3pt of l.east,anchor=west,align=left,
-  font=\sffamily\scriptsize,text=ipGray] {Research Lab\\Institute Name};}}
-\panellogo{\tikz[baseline=-0.6ex]{\node[fill=ipAccent,text=white,
-  font=\sffamily\bfseries\small,minimum size=16pt,inner sep=0pt,
-  rounded corners=2pt] (u) {U};
-  \node[right=3pt of u.east,anchor=west,
-  font=\sffamily\bfseries\footnotesize,text=ipInk] {University Name};}}
-\firstpagenote{\faEnvelope[regular]\enspace Correspondence to
-  \href{mailto:author@example.com}{\texttt{author@example.com}}.
-  Preprint, work in progress.}
+% Replace these text marks with institutional logo files if available.
+\leftlogo{{\sffamily\bfseries\small\color{ipAccent}University Name}}
+\rightlogo{\begin{tabular}{r}
+  \sffamily\bfseries\scriptsize Research Lab\\[-1pt]
+  \sffamily\scriptsize\color{ipGray}Institute Name
+\end{tabular}}
+\firstpagenote{Preprint. Correspondence:
+  \href{mailto:author@example.com}{\texttt{author@example.com}}.}
 
 \abstract{Rubric-based reinforcement learning has become a standard way to
 post-train language models on tasks without verifiable answers, yet the judge
@@ -110,10 +99,10 @@ Our contributions are as follows:
   \item We evaluate on four long-form benchmarks and two model scales.
 \end{itemize}
 
-\begin{keybox}
+\begin{finding}
 Most reward hacking concentrates on a small set of rubric items where the
 judge was already uncertain at the start of training.
-\end{keybox}
+\end{finding}
 
 \section{Method}
 
@@ -132,9 +121,10 @@ criterion $c_k$.
 \paragraph{Estimating reliability} We sample the judge $m$ times per
 criterion and set $\rho_k$ to one minus the normalized entropy of its votes.
 
-\sidefigure[0.6]{%
+\begin{figure}[t]
+\centering
 \begin{tikzpicture}
-\begin{axis}[width=\linewidth,height=4.8cm,
+\begin{axis}[width=0.78\linewidth,height=5.0cm,
   axis lines=left,xlabel={Training step},ylabel={Gold judge score},
   every axis label/.style={font=\sffamily\footnotesize,text=ipGray},
   tick label style={font=\sffamily\scriptsize,text=ipGray,
@@ -150,18 +140,19 @@ criterion and set $\rho_k$ to one minus the normalized entropy of its votes.
   {(0,44)(100,50.5)(200,54)(300,54.5)(400,53)(500,51.5)};
 \addlegendentry{Uniform rubric}
 \end{axis}
-\end{tikzpicture}}{%
+\end{tikzpicture}
 \caption{\captitle{Training dynamics.} Gold judge score on held-out prompts
 during training. The uniform rubric baseline peaks and then declines as the
 policy exploits unreliable criteria; reliability weighting keeps improving.}
-\label{fig:curve}}
+\label{fig:curve}
+\end{figure}
 
 \section{Experiments}
 
 \begin{table}[t]
 \centering
 \caption{\captitle{Main results.} Gold judge scores on out-of-distribution
-benchmarks. Best in bold; our method is shaded.}
+benchmarks. Best values are shown in bold.}
 \label{tab:main}
 \small
 \begin{tabular}{@{}lcccc@{}}

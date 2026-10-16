@@ -10,11 +10,11 @@ branding.
 ## Features
 
 - Three low-saturation palettes: `navy`, `teal`, and `slate`
-- Open and panel-style title layouts
+- Rigorous, open, and panel-style title layouts
 - Left-aligned or centered title blocks
 - Optional institution and lab logos
 - Metadata links for code, models, data, and project pages
-- Side captions, highlighted result rows, takeaway boxes, and prompt boxes
+- Formal finding statements, side captions, and appendix prompt blocks
 - Styled appendix title and automatic appendix contents
 - Standard `pdflatex` workflow suitable for arXiv
 
@@ -23,7 +23,7 @@ branding.
 ```latex
 \documentclass[
   palette=navy,
-  titlestyle=panel,
+  titlestyle=rigorous,
   titlealign=left
 ]{inkpaper}
 
@@ -52,15 +52,15 @@ The result is `main.pdf`.
 | Option | Values | Default |
 | --- | --- | --- |
 | `palette` | `navy`, `teal`, `slate` | `navy` |
-| `titlestyle` | `open`, `panel` | `open` |
+| `titlestyle` | `rigorous`, `open`, `panel` | `rigorous` |
 | `titlealign` | `left`, `center` | `left` |
 
-For the panel-style example shown in the repository:
+For the formal single-column example shown in the repository:
 
 ```latex
 \documentclass[
   palette=navy,
-  titlestyle=panel,
+  titlestyle=rigorous,
   titlealign=left
 ]{inkpaper}
 ```
@@ -73,17 +73,18 @@ For the panel-style example shown in the repository:
 \data{https://huggingface.co/datasets/your-org/data}
 \project{https://project.example.com}
 
-\begin{keybox}[Key takeaway]
+\begin{finding}[Main finding]
 The main finding in one or two sentences.
-\end{keybox}
+\end{finding}
 
 \begin{promptbox}[Judge prompt]
 Your prompt text.
 \end{promptbox}
 ```
 
-See `main.tex` for logo headers, side captions, highlighted table rows, and
-appendix formatting.
+See `main.tex` for institutional headers, formal captions, tables, and
+appendix formatting. The `open` and `panel` title styles remain available for
+less conventional technical reports.
 
 ## Requirements
 

@@ -140,11 +140,11 @@
     \makebox[6.2em][l]{\sffamily\bfseries\footnotesize\color{ipAccent}#1}%
     {\small #2}\par}%
   \g@addto@macro\IP@metainline{%
-    \mbox{{\sffamily\bfseries\footnotesize\color{ipAccent}#1}\enspace{\small #2}}\qquad}}
+    \mbox{{\sffamily\bfseries\footnotesize\color{ipAccent}#1}\enspace{\small #2}}\quad}}
 \renewcommand{\date}[1]{\metadata{Date}{#1}}
 \newcommand{\correspondence}[1]{\metadata{Contact}{#1}}
 \newcommand{\linkitem}[3]{\g@addto@macro\IP@links{%
-  \mbox{\href{#3}{\sffamily\footnotesize\bfseries\color{ipAccent}#2}}\qquad}}
+  \mbox{\href{#3}{\sffamily\footnotesize\bfseries\color{ipAccent}#2}}\quad}}
 \newcommand{\code}[1]{\linkitem{\faGithub}{Code}{#1}}
 \newcommand{\project}[1]{\linkitem{\faGlobe}{Project}{#1}}
 \newcommand{\data}[1]{\linkitem{\faDatabase}{Data}{#1}}
@@ -184,18 +184,21 @@
 
 \newcommand{\IP@rigorousheading}{%
   {\sffamily\scriptsize\color{ipGray}%
-    \textls[140]{\MakeUppercase{\IP@tag}}\par}\vspace{0.8em}
-  {\bfseries\fontsize{22}{27}\selectfont\color{ipInk}\@title\par}%
-  \vspace{0.9em}
-  {\bfseries\fontsize{10.5}{14}\selectfont\color{ipInk}\@author\par}%
-  \ifx\IP@affil\@empty\else
-    \vspace{0.4em}{\small\color{ipGray}\IP@affil\par}\fi
-  \ifx\IP@notes\@empty\else
-    \vspace{0.15em}{\footnotesize\color{ipGray}\IP@notes\par}\fi}
+    \textls[140]{\MakeUppercase{\IP@tag}}\par}\vspace{0.55em}
+  {\bfseries\fontsize{19}{23}\selectfont\color{ipInk}\@title\par}%
+  \vspace{0.6em}
+  {\bfseries\fontsize{10}{12.5}\selectfont\color{ipInk}\@author\par}%
+  \ifx\IP@affil\@empty
+    \ifx\IP@notes\@empty\else
+      \vspace{0.2em}{\footnotesize\color{ipGray}\IP@notes\par}\fi
+  \else
+    \vspace{0.25em}{\small\color{ipGray}\IP@affil%
+      \ifx\IP@notes\@empty\else\quad{\footnotesize\IP@notes}\fi\par}%
+  \fi}
 
 \newcommand{\IP@linksblock}{%
   \ifx\IP@links\@empty\else
-    \vspace{0.8em}{\IP@links\unskip\par}\fi}
+    \vspace{0.45em}{\IP@links\unskip\par}\fi}
 
 \newcommand{\IP@metablock}{%
   \ifx\IP@meta\@empty\else
@@ -203,6 +206,11 @@
     \ifdefstring{\IP@titlealign}{center}%
       {{\color{ipInk}\IP@metainline\unskip\par}}%
       {{\color{ipInk}\IP@meta}}%
+  \fi}
+
+\newcommand{\IP@rigorousmetablock}{%
+  \ifx\IP@meta\@empty\else
+    \vspace{0.35em}{\color{ipInk}\IP@metainline\unskip\par}%
   \fi}
 
 \newcommand{\IP@openstyle}{%
@@ -221,10 +229,10 @@
 
 \newcommand{\IP@rigorousstyle}{%
   \begingroup\IP@align
-    \IP@rigorousheading\IP@linksblock\IP@metablock
+    \IP@rigorousheading\IP@linksblock\IP@rigorousmetablock
   \endgroup
   \ifx\IP@abstract\@empty\else
-    \vspace{1.0em}%
+    \vspace{0.75em}%
     \begin{tcolorbox}[enhanced,colback=ipPanel,colframe=ipRule,
       boxrule=0.4pt,arc=2pt,left=16pt,right=16pt,top=11pt,bottom=12pt]
       {\sffamily\bfseries\small\color{ipInk}Abstract\par}\vspace{0.35em}

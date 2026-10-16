@@ -102,7 +102,7 @@ less conventional technical reports.
 ## Requirements
 
 A reasonably complete TeX Live installation is recommended. The template uses
-widely available packages including `newpx`, `sourcesanspro`, `tcolorbox`,
+widely available packages including `newtx`, `sourcesanspro`, `tcolorbox`,
 `fontawesome5`, and `titletoc`.
 
 ## License

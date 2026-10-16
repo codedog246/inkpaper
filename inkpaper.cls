@@ -13,7 +13,7 @@
 % ---------------------------------------------------------------- layout
 \RequirePackage[letterpaper,top=1.05in,bottom=1.0in,left=1.2in,right=1.2in,
   headheight=26pt,headsep=0.25in,footskip=0.45in]{geometry}
-\linespread{1.06}
+\linespread{1.03}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.55em plus 0.1em}
 
@@ -21,15 +21,15 @@
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
 \RequirePackage{amsmath}
-\RequirePackage{newpxtext}
-\RequirePackage{newpxmath}
+\RequirePackage{newtxtext}
+\RequirePackage{newtxmath}
 \RequirePackage[scale=0.95]{sourcesanspro}
 \RequirePackage[varqu,scaled=0.95]{zi4}
 \RequirePackage[protrusion=true,expansion=true,tracking=true]{microtype}
 
 % ---------------------------------------------------------------- colors
 \RequirePackage[table]{xcolor}
-\definecolor{ipInk}{HTML}{1B1F27}
+\definecolor{ipInk}{HTML}{14171C}
 \definecolor{ipGray}{HTML}{5F6672}
 \definecolor{ipFaint}{HTML}{8A919C}
 \definecolor{ipAbstractBlue}{HTML}{E7F0FA}
